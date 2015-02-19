@@ -1,0 +1,43 @@
+@media screen and (min-width: 480px) {
+  
+  /**********************************
+  TWO COLUMN LAYOUT
+  ***********************************/
+  body {
+		/*background-color: blue;*/
+        font-size: 0.75em;
+	}
+  #primary {
+    width: 50%;
+    float: left;
+  }
+  
+  #secondary {
+    width: 40%;
+    float: right;
+  }
+  
+
+  
+  /**********************************
+  PAGE: PORTFOLIO
+  ***********************************/
+  
+  #gallery li {
+    width: 28.3333%;
+  }
+  
+  #gallery li:nth-child(4n) {
+    clear: left;
+  }
+  
+  
+  
+}
+
+@media screen and (min-width: 660px) {
+  body {
+		/*background-color: red;*/
+        font-size: 1em;
+	}
+}
