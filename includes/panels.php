@@ -222,7 +222,7 @@ function VaccinationPanel ($animalID, $species, $mysqli)
 		<td style="text-align: center;"><?= $numDoses ?>&nbsp;</td>
 		<td style="text-align: left;"><?= substr($vaccDateStr, 0, -2) ?>&nbsp;</td>
 		<td style="text-align: center;">
-            <font <?= (diffDays(date('m/d/y'), $nextDose, false)?"color=\"red\"":"color=\"black\"") ?> >
+            <font <?= (diffDays(date('m/d/y'), $nextDose, false)<0?"color=\"red\"":"color=\"black\"") ?> >
                 <?= $nextDose ?>&nbsp;
             </font>
         </td>
