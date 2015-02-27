@@ -25,6 +25,7 @@
 	$userName = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
+    // Init the error string
 	$errString = "";
 
 	$mysqli = DBConnect();
@@ -38,7 +39,7 @@
 	}
 
 	// If there is no animal ID, then redirect to the findAnimal page.
-	// This should NEVER happen.
+	// NOTE: This should NEVER happen, and is likely the cause of URL manipulation.
 	if (isset($_GET['animalID'])) {
 		$animalID =  intval($_GET['animalID']);
 	} else header('Location: ' . "findAnimal.php", true, 302);
@@ -95,7 +96,6 @@
  ?>
 <font color=red><?=$errString?></font>		
 <table  width=100%>  
-	  
 	<tr> <!-- Animal demographic information -->
 		<td>							
 			<table id="criteria"> 

@@ -104,7 +104,8 @@
 	</tr>
 
 <?php
-		$findPersonSQL = "CALL FindPerson('".lbt($name)."', '".lbt($email)."', '".lbt($telephone)."', $positionTypeID, ".($isOrg).")";
+        $findName = str_replace(" ", "%", $name);
+		$findPersonSQL = "CALL FindPerson('".lbt($findName)."', '".lbt($email)."', '".lbt($telephone)."', $positionTypeID, ".($isOrg).")";
 		$result = $mysqli->query($findPersonSQL);
 		if (!$result) errorPage($mysqli->errno, $mysqli->error, $findPersonSQL);
 
