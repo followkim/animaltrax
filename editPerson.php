@@ -26,7 +26,7 @@
 		if (isset($_GET['surgeryDate'])) $retPage .= "surgeryDate=".$_GET['surgeryDate']."&";
 		if (isset($_GET['surgeryTypeID'])) $retPage .= "surgeryTypeID=".$_GET['surgeryTypeID']."&";
 		if (isset($_GET['action'])) $retPage .= "action=".$_GET['action']."&";
-	} else $retPage = ($personID>0?"viewPerson.php?personID=$personID":"findPerson.php");
+	} else $retPage = "viewPerson.php?" . ($personID>0?"personID=$personID":"");
 
 
 	// Connect to the database
@@ -79,7 +79,8 @@
 				$row = $result->fetch_array();
 				$personID = $row['personID'];
 				$result->close();	
-			}
+                $retPage .= "personID=".$personID."&";
+            }
 		} 
 		
 		// redirect back to the info page 
