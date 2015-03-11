@@ -63,7 +63,10 @@
 	$numDogs = $isPost?intval($_POST['numDogs']):0;
 	$numCats = $isPost?intval($_POST['numCats']):0;
 	$note = $isPost?$_POST['note']:"";
-
+    $needHypo = (isset($_POST['needHypo'])?1:0);
+    $closed = (isset($_POST['closed'])?1:0);
+    $rank = $isPost?intval($_POST['rank']):0;
+    
 	// Check required POST variables
 	if ($isPost) {
 		if ($species == "") $errString .=  "Species is required!<br>";
@@ -80,11 +83,11 @@
 			$insertSQL = sprintf("INSERT INTO pixie.Application (
 				personID, applicationDate, species, gender,breed,
 				minAge, maxAge, minWeight, maxWeight, minActivityLevel, maxActivityLevel,
-				numKids, numDogs, numCats, personalityID, note) 
-				VALUES (%s, '%s', '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, '%s', '%s');", 
+				numKids, numDogs, numCats, needHypo, closed, rank, personalityID, note) 
+				VALUES (%s, '%s', '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, '%s', '%s');", 
 				$personID, $applicationDate, lbt($species), lbt($gender), lbt($breed), 
 				$minAge, $maxAge, $minWeight, $maxWeight, $minActivityLevel, $maxActivityLevel,
-				$numKids, $numDogs, $numCats, lbt($personalityID), lbt($note)
+				$numKids, $numDogs, $numCats, $needHypo, $closed, $rank, lbt($personalityID), lbt($note)
 			);
 			$mysqli->query($insertSQL);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $insertSQL);
@@ -106,6 +109,9 @@
 				",numKids = 		" .$numKids.
 				",numDogs = 		" .$numDogs.
 				",numCats = 		" .$numCats.
+				",needHypo = 		" .$needHypo.
+				",closed = 		" .$closed.
+				",rank = 		" .$rank.
 				",personalityID = 	'" .lbt($personalityID)."'".
 				",note = 			'" .lbt($note)."'".
 				" WHERE applicationID = " .$applicationID.";"
@@ -114,7 +120,7 @@
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $updateSQL);
 		}
 		// At the end of a post, go back to the retPage
-		header('Location: ' . $retPage, true, 302);		
+        header('Location: ' . $retPage, true, 302);		
 	} // END POST
 
 	// Start GET.  First check for a deleted application
@@ -148,7 +154,10 @@
 			$numDogs = $row['numDogs'];
 			$numCats = $row['numCats'];
 			$personalityID = $row['personalityID'];
-			$note = $row['note'];			
+			$needHypo = $row['needHypo'];
+			$closed = $row['closed'];
+			$rank = $row['rank'];
+			$note = $row['note'];
 			$result->close();
 		}
 		
@@ -190,7 +199,17 @@
 							</select>				
 						</td>
 					</tr>
-				</table>
+                    <tr> <!-- Rank -->
+						<td id="leftHand">Rank</td><td id="rightHand"><select name=rank>
+                                <?php
+                                    for ($i = 1; $i <= 5; $i++) {
+                                ?>
+								<option value="<?=$i?>" <?= ($rank==$i)?"selected":"" ?>><?=$i?></option>
+                                <?php } ?>
+							</select>
+						</td>
+					</tr>
+                </table>
 			</td>
 			<td>	<!-- Column 2 -->
 				<table>			 					
@@ -212,6 +231,7 @@
 						<td><input size=2 name="minWeight" value="<?=$minWeight?>" type="num"> and 
 							<input size=2 name="maxWeight" value="<?=$maxWeight?>" type="num"> lbs</td>
 					</tr>
+					<?=trd_buildOption("Personality", "Personality", "personalityID", "personality", $personalityID, "addApplication", $mysqli, 1)?>
 				</table>
 			</td>
 			<td>	<!-- Column 3 -->
@@ -219,7 +239,8 @@
 					<?=trd_labelData("Number of children", $numKids, "numKids", false, "num",2)?>
 					<?=trd_labelData("Number of dogs", $numDogs, "numDogs", false, "num",2)?>
 					<?=trd_labelData("Number of cats", $numCats, "numCats", false, "num",2)?>
-					<?=trd_buildOption("Personality", "Personality", "personalityID", "personality", $personalityID, "addApplication", $mysqli, 1)?>
+					<?=trd_labelChk("Hypoallergetic needed?", "needHypo", $needHypo)?>
+					<?=trd_labelChk("Closed?", "closed", $closed)?>
 				</table>
 			</td>
 		</tr>

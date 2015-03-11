@@ -55,7 +55,8 @@
 	$cats = ($isPost?$_POST['cats']:0);
 	$adoptionStatusID = $isPost?$_POST['adoptionStatusID']:'';
 	$personalityID = $isPost?($_POST['personalityID']):'';
-	
+	$isHypo = (isset($_POST['isHypo'])?1:0);
+
 	// Check required variables
 	if ($isPost) {
 		if ($animalName == "") $errString .=  "Animal name is required!<br>";
@@ -99,12 +100,12 @@
 				(animalName, species, breed, markings, gender, 
 				estBirthdate, isFixed, note, activityLevel,
 				microchipNumber, microchipTypeID, dateImplanted, url, 
-				kids, dogs, cats, adoptionStatusID, personalityID) 
-				VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, '%s', %s, '%s', %s, %s, '%s', '%s', '%s', '%s', '%s', '%s');",
+				kids, dogs, cats, adoptionStatusID, personalityID, isHypo) 
+				VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, '%s', %s, '%s', %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', %s);",
 				lbt($animalName), lbt($species), lbt($breed), lbt($markings), lbt($gender), 
 				$estBirthdate, 	$isFixed, lbt($note), $activityLevel, 
 				lbt($microchipNumber), $microchipTypeID, $dateImplanted, lbt($url), 
-				$kids, $dogs, $cats, $adoptionStatusID, $personalityID
+				$kids, $dogs, $cats, $adoptionStatusID, $personalityID, $isHypo
 			);
 			$mysqli->query($insertAnimalSQL);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $insertAnimalSQL);
@@ -139,12 +140,13 @@
 		else {
 			$sql = sprintf("update Animal SET 
 				animalName = '%s', species = '%s', breed = '%s', markings = '%s', gender = '%s', 
-				estBirthdate = %s, isFixed = %s, kids = '%s',  dogs = '%s',  cats = '%s',  
+				estBirthdate = %s, isFixed = %s, isHypo = %s, 
+                kids = '%s',  dogs = '%s',  cats = '%s',  
 				adoptionStatusID = '%s', activityLevel = %s, personalityID = '%s',
 				microchipNumber = '%s',  microchipTypeID = %s, dateImplanted = %s,
 				note = '%s', url = '%s' WHERE animalID = $animalID;",
 				lbt($animalName), lbt($species), lbt($breed), lbt($markings), lbt($gender), 
-				$estBirthdate, $isFixed, $kids, $dogs, $cats, 
+				$estBirthdate, $isFixed, $isHypo, $kids, $dogs, $cats, 
 				$adoptionStatusID, $activityLevel, $personalityID, lbt($microchipNumber), $microchipTypeID, 
 				$dateImplanted, lbt($note), lbt($url)
 			);
@@ -191,6 +193,7 @@
 			$cats = $row['cats'];
 			$adoptionStatusID = $row['adoptionStatusID'];
 			$personalityID = $row['personalityID'];
+			$isHypo = $row['isHypo'];
 			$result->close();
 		}
 	}
@@ -240,9 +243,10 @@
 							</select> 							
 						</td>
 					</tr>
-					<tr><?=td_labelData("Breed", $breed, "breed")?></tr>
-					<tr><?=td_labelData("Markings", $markings, "markings")?></tr>
-				</table>
+					<?=trd_labelData("Breed", $breed, "breed")?>
+					<?=trd_labelData("Markings", $markings, "markings")?>
+                    <?=trd_buildOption("Personality", "Personality", "personalityID", "personality", $personalityID, "retPage=editAnimal&animalID=$animalID", $mysqli, true)?>
+                </table>
 			</td>
 			<td>	<!-- Column 2 -->
 				<table>			 						
@@ -274,8 +278,8 @@
 							<input type="radio" name="kids" value="U" <?= ($kids=='U')?"checked":"" ?>>Unsure
 						</td>
 					</tr>
+					<?=trd_labelChk("Hypoallergetic Breed?", "isHypo", $isHypo)?>
 					<?=trd_buildOption("Adoption Status", "AdoptionStatus", "adoptionStatusID", "adoptionStatus", $adoptionStatusID, "retPage=editAnimal&animalID=$animalID", $mysqli, true) ?>
-					<?=trd_buildOption("Personality", "Personality", "personalityID", "personality", $personalityID, "retPage=editAnimal&animalID=$animalID", $mysqli, true)?>
 				</table>
 			</td>
 			<td>	<!-- Column 3 -->

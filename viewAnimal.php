@@ -59,6 +59,7 @@
 		$gender = $row['gender'];
 		$estBirthdate = $row['estBirthdate'];
 		$isFixed = $row['isFixed'];
+		$isHypo = $row['isHypo'];
 		$dogs = $row['dogs'];
 		$cats = $row['cats'];
 		$kids = $row['kids'];
@@ -119,6 +120,7 @@
 				<?=trd_labelData("Good with kids", $kids)?>
 				<?=trd_labelData("Good with ".($species=="Dog"?"other":"")." dogs", $dogs)?>
 				<?=trd_labelData("Good with ".($species=="Cat"?"other":"")." cats", $cats)?>
+				<?=trd_labelData("Hypoallergetic", $isHypo)?>
 				<?=trd_labelData("Adoption Status", $adoptionStatus)?>
 				<?=trd_labelData("Personality", $personality)?>
 			</table>

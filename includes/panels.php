@@ -266,7 +266,19 @@ function animalPanel($animalID, $mysqli) {
 
 function testPanel($animalID, $species, $mysqli) {
 ?>
-	<table id=tabular width="100%">
+	<table id
+INSERT INTO `pixie`.`DogSize`
+(`dogSizeName`,
+`minSize`,
+`maxSize`)
+VALUES
+("Toy", 		0, 10),
+("Small", 		10, 25),
+("Medium", 		25, 60),
+("Large", 		60, 150),
+("ExtraLarge", 	150, 400);
+
+=tabular width="100%">
 		<tr><td colspan="5"><b>Completed Tests</b></td></tr>
 		<tr>
 		  <th width="150px">Test</th>
@@ -308,8 +320,9 @@ function applicationPanel($personID, $mysqli) {
 		<tr><td style="vertical-align: top; width: 100%;" colspan="5"><b>Applications</b></td></tr>
 		<tr>
 		  <th>Date</th>
+		  <th>Rank</th>
 		  <th>Species</th>
-		  <th>Breed</th>
+		  <th>Name</th>
 		  <th>Matches</th>
 		  <th>&nbsp;</th>
 		</tr>
@@ -326,7 +339,9 @@ function applicationPanel($personID, $mysqli) {
 					'species' 			=> $row['species'],
 					'breed' 			=> $row['breed'],
 					'applicationID' 	=> $row['applicationID'],
-					'personID' 			=> $row['personID']
+					'personID' 			=> $row['personID'],
+					'closed' 			=> $row['closed'],
+					'rank' 			    => $row['rank']
 				);
 			}
 			$result->close();
@@ -334,22 +349,25 @@ function applicationPanel($personID, $mysqli) {
 		?>
 		<tr>
 			<td><?= MySQL2Date($thisApplication['applicationDate']) ?></td>
+			<td><?= $thisApplication['rank'] ?></td>
 			<td><?= ($thisApplication['species']=='C'?"Cat":($thisApplication['species']=='D'?"Dog":"Error")) ?></td>
 			<td><?= $thisApplication['breed'] ?></td>
 			<td>
 				<?php
-					$sql = "call matchAnimals(".$thisApplication['applicationID'].", 0);";
-					$result = $mysqli->query($sql);
-					if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-					else {
-						while($row = $result->fetch_array()) {
-				?>
-					<a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a><br>
-				<?php
-						}
-						$result->close();
-						freeResult($mysqli);
-					}
+					if ($thisApplication['closed']) {
+                        print "<i>closed</i>";
+                    } else {
+                        $sql = "call matchAnimals(".$thisApplication['applicationID'].", 0);";
+                        $result = $mysqli->query($sql);
+                        if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+                        else {
+                            while($row = $result->fetch_array()) { ?>
+                                <a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a><br>                                
+                            <?php }
+                        	$result->close();
+                            freeResult($mysqli);
+                        }
+                    }
 				?>
 			</td>
 			<td>
