@@ -266,19 +266,7 @@ function animalPanel($animalID, $mysqli) {
 
 function testPanel($animalID, $species, $mysqli) {
 ?>
-	<table id
-INSERT INTO `pixie`.`DogSize`
-(`dogSizeName`,
-`minSize`,
-`maxSize`)
-VALUES
-("Toy", 		0, 10),
-("Small", 		10, 25),
-("Medium", 		25, 60),
-("Large", 		60, 150),
-("ExtraLarge", 	150, 400);
-
-=tabular width="100%">
+	<table id=tabular width="100%">
 		<tr><td colspan="5"><b>Completed Tests</b></td></tr>
 		<tr>
 		  <th width="150px">Test</th>
@@ -317,7 +305,7 @@ function applicationPanel($personID, $mysqli) {
 
 ?>	
 	<table  id="tabular" width="100%"> 					
-		<tr><td style="vertical-align: top; width: 100%;" colspan="5"><b>Applications</b></td></tr>
+		<tr><td style="vertical-align: top; width: 100%;" colspan="6"><b>Applications</b></td></tr>
 		<tr>
 		  <th>Date</th>
 		  <th>Rank</th>
@@ -379,7 +367,7 @@ function applicationPanel($personID, $mysqli) {
 			}
 		?>
 		<tr>
-			<td colspan=5><a href="addApplication.php?personID=<?= $personID ?>">Add New Application</a></td>
+			<td colspan=6><a href="addApplication.php?personID=<?= $personID ?>">Add New Application</a></td>
 		</tr>
 	</table> 	
 <?php

@@ -154,3 +154,10 @@
 			return date($preferredDateStr, strtotime($inDate));	
 		else return "";
 	}
+
+    function AddDays($inDate, $days) {
+        $date=date_create(Date2MySQL($inDate));
+		date_add($date,new DateInterval('P'.$days.'D'));
+		$nextDose = date_format($date,"Y-m-d");
+        return $nextDose;
+    }

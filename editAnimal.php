@@ -56,6 +56,10 @@
 	$adoptionStatusID = $isPost?$_POST['adoptionStatusID']:'';
 	$personalityID = $isPost?($_POST['personalityID']):'';
 	$isHypo = (isset($_POST['isHypo'])?1:0);
+    
+    $heartwormPos = (isset($_POST['heartwormPos'])?1:0);
+    $fiv = (isset($_POST['fiv'])?1:0);
+    $felv = (isset($_POST['felv'])?1:0);
 
 	// Check required variables
 	if ($isPost) {
@@ -130,8 +134,39 @@
 				$insertTransferSQL = "insert into Transfer VALUES ($animalID, 1, $transferDate, 1, '".lbt($fee)."', '".lbt($transferNote)."');";
 				$mysqli->query($insertTransferSQL);
 				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $insertTransferSQL);
+                
+                // Add vaccinations
+                $vaccinationSQL = "insert into Prescription (medicationID, animalID, startDate, nextDose, note) VALUES  ";
+                if (($_POST['dhpp1'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp1'])."', '".AddDays($_POST['dhpp1'], 14)."', 'Initial Intake'),";
+                if (($_POST['dhpp2'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp2'])."', NULL, 'Initial Intake'),";
+                if (($_POST['dhpp3'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp3'])."', NULL, 'Initial Intake'),";
+                if (($_POST['bordatella'])) $vaccinationSQL .= "(2, $animalID, '".Date2MySQL($_POST['bordatella'])."', '".AddDays($_POST['bordatella'], 365)."', 'Initial Intake'),";
+                if (($_POST['rabies'])) $vaccinationSQL .= "(3, $animalID, '".Date2MySQL($_POST['rabies'])."', '".AddDays($_POST['rabies'], 365)."', 'Initial Intake'),";
+                if (($_POST['flea'])) $vaccinationSQL .= "(4, $animalID, '".Date2MySQL($_POST['flea'])."', '".AddDays($_POST['flea'], 30)."', 'Initial Intake'),";
+                if (($_POST['pyrantel1'])) $vaccinationSQL .= "(5, $animalID, '".Date2MySQL($_POST['pyrantel1'])."', '".AddDays($_POST['pyrantel1'], 30)."', 'Initial Intake'),";
+                if (($_POST['pyrantel2'])) $vaccinationSQL .= "(5, $animalID, '".Date2MySQL($_POST['pyrantel2'])."', NULL, 'Initial Intake'),";
+                $vaccinationSQL = substr($vaccinationSQL, 0, -1) . ";";
+                $mysqli->query($vaccinationSQL);
+                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $vaccinationSQL);
+
+                // Add tests
+                $testSQL = "insert into Test (testTypeID, animalID, testDate, testResult, note) VALUES  ";
+                if (($_POST['heartworm'])) $testSQL .= "(1, $animalID, '".Date2MySQL($_POST['heartworm'])."', ".($heartwormPos?"'positive'":"'negative'").", 'Initial Intake'),";
+                if (($_POST['felvfiv'])) $testSQL .= "(2, $animalID, '".Date2MySQL($_POST['felvfiv'])."', ".($fiv?"'positive'":"'negative'").", 'Initial Intake'),";
+                if (($_POST['felvfiv'])) $testSQL .= "(3, $animalID, '".Date2MySQL($_POST['felvfiv'])."',".($felv?"'positive'":"'negative   12/31/  '").", 'Initial Intake'),";
+                $testSQL = substr($testSQL, 0, -1) . ";";
+                $mysqli->query($testSQL);
+                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $testSQL);
+
+                // Add weight
+                $vitalsSQL = "insert into VitalSign (vitalSignTypeID, animalID, vitalDateTime, vitalValue, note) VALUES  ";
+               if (isset($_POST['weightDate'])) $vitalsSQL .= "(7, $animalID, '".Date2MySQL($_POST['weightDate'])."', ".lbt($_POST['weightValue']).", 'Initial Intake');";
+                $mysqli->query($vitalsSQL);
+                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $vitalsSQL);
+
 				header("location:addTransfer.php?animalID=".$animalID);
-			} // end add new
+
+        } // end add new
 			else errorPage($mysqli->errno, "Unable to find newly inserted animal ($animalID)", $getAnimalSQL);
 
 		}
@@ -205,7 +240,7 @@
 	<table id=criteria>    
 		<tr>
 			<td>	<!-- Column 1 -->						
-				<table> <!-- first column of demographic information -->
+				<table > <!-- first column of demographic information -->
 					<tr><?=td_labelData("Name", $animalName, "animalName", true)?></tr>
 					<tr>
 						<td style="text-align: right;">Gender: </td>
@@ -308,19 +343,44 @@
 	if ($animalID==0) { ?>
 	<hr>
 	<h3>Transfered to Pixie:</h3>
-	<table> 
-		<?=trd_labelData("Arrival", date('m/d/y'), "transferDate")?>
-		<?=trd_buildOption("Status", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
-		<?=trd_labelData("Intake Fee", "", "fee")?>
-		<tr><td></td><td><i>Use a negative number if Pixie paid this fee.</i></td></tr>
-		<tr>
-			<td style="text-align: right;"><b>Notes: </b></td>
-			<td style="text-align: left;"><b><textarea type="memo" name="transferNote" cols="30"></textarea></td>
-		</tr>	
-		<tr>
-			<td colspan="2">Note: You will add the <u>initial transfer information</u> on the next page.</td>
-		</tr>
-	</table>
+    <table >
+        <tr>
+            <td>
+                <table  id=criteria> 
+                    <?=trd_labelData("Arrival", date('m/d/y'), "transferDate")?>
+                    <?=trd_buildOption("Status", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
+                    <?=trd_labelData("Intake Fee", "", "fee")?>
+                    <tr><td></td><td><i>Use a negative number if Pixie paid this fee.</i></td></tr>
+                    <tr>
+                        <td style="text-align: right;"><b>Notes: </b></td>
+                        <td style="text-align: left;"><b><textarea type="memo" name="transferNote" cols="30"></textarea></td>
+                    </tr>	
+                    <tr>
+                        <td colspan="2">Note: You will add the <u>initial transfer information</u> on the next page.</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table id=criteria>
+                    <?=trd_labelData("DHPP (Dog) or FVRCP (cat) (1st)", '', "dhpp1")?>
+                    <?=trd_labelData("DHPP (Dog) or FVRCP (cat) (2nd)", '', "dhpp2")?>
+                    <?=trd_labelData("DHPP (Dog) or FVRCP (cat) (3rd)", '', "dhpp3")?>
+                    <?=trd_labelData("Bordatella (Dog only)", '', "bordatella")?>
+                    <?=trd_labelData("Heartworm: Date", '', "heartworm")?>
+					<?=trd_labelChk("Heartworm: positive?", "", $heartwormPos)?>
+                    <?=trd_labelData("FELV/FIV: Date (Cat only)", '', "felvfiv")?>
+					<?=trd_labelChk("FELV/FIV: positive?", "felv", $felv)?>
+					<?=trd_labelChk("FELV/FIV: positive?", "fiv", $fiv)?>
+                    <?=trd_labelData("Rabies", '', "rabies")?>
+                    <?=trd_labelData("Pyrantel (1st)", '', "pyrantel1")?>
+                    <?=trd_labelData("Pyrantel (2nd)", '', "pyrantel2")?>
+                    <?=trd_labelData("Flea Treatment", '', "flea")?>
+                    <?=trd_labelData("Initial Weight: Date", '', "weightDate")?>
+                    <?=trd_labelData("Initial Weight: Value", '', "weightValue")?>
+                </table>
+            </td>
+        </tr>
+    </table>
 <?php 
 }
 ?>
