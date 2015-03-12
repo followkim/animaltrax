@@ -38,6 +38,7 @@
         $updateSQL = "update Application set closed = $shouldClose where applicationID = $applicationID;";							
         $result = $mysqli->query($updateSQL);
         if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $updateSQL);
+        header('Location: ' . "viewApplications.php", true, 302);	
     }
 
 
@@ -82,10 +83,12 @@ Open Applications:
         <th>Rank</th>
         <th>Breed</th>
 		<th>&nbsp;</th>
+		<th>&nbsp;</th>
 	</tr>
 
 <?php
-		$sql = "CALL FindApplication('".lbt($name)."', '".lbt($breed)."', '".lbt($species)."', ".($showClosed).")";
+        $findName = str_replace(" ", "%", $name);
+		$sql = "CALL FindApplication('".lbt($findName)."', '".lbt($breed)."', '".lbt($species)."', ".($showClosed).")";
 		$result = $mysqli->query($sql);
 		if (!$result) errorPage($mysqli->errno, $mysqli->error, $sql);
 
@@ -98,16 +101,14 @@ Open Applications:
 		<td><?= ($row['species']=='D'?"Dog":"Cat")?>&nbsp;</td>
 		<td><?= $row['rank'] ?>&nbsp;</td>
 		<td><?= $row['breed'] ?>&nbsp;</td>
-		<td>
-            <a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>">Edit</a>
-            <a href="viewApplications.php?applicationID=<?=$row['applicationID']?>&closed=<?=$row['closed']?0:1?>"><?=$row['closed']?"Open":"Close"?></a>
-        </td>
+		<td><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>">Edit</td>
+        <td><a href="viewApplications.php?applicationID=<?=$row['applicationID']?>&closed=<?=$row['closed']?0:1?>"><?=$row['closed']?"Open":"Close"?></a></td>
 	</tr>
 <?php
 	}
 	
 ?>
-	<tr><td colspan=6>Found  <?=$result->num_rows?> <?=($result->num_rows==1?"application":"applications")?>.</td></tr>
+	<tr><td colspan=7>Found  <?=$result->num_rows?> <?=($result->num_rows==1?"application":"applications")?>.</td></tr>
 </table>
 
 <?php 	
