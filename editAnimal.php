@@ -140,6 +140,9 @@
                 if (($_POST['dhpp1'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp1'])."', '".AddDays($_POST['dhpp1'], 14)."', 'Initial Intake'),";
                 if (($_POST['dhpp2'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp2'])."', NULL, 'Initial Intake'),";
                 if (($_POST['dhpp3'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp3'])."', NULL, 'Initial Intake'),";
+                if (($_POST['fvrcp1'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp1'])."', '".AddDays($_POST['dhpp1'], 14)."', 'Initial Intake'),";
+                if (($_POST['fvrcp2'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp2'])."', NULL, 'Initial Intake'),";
+                if (($_POST['fvrcp3'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp3'])."', NULL, 'Initial Intake'),";
                 if (($_POST['bordatella'])) $vaccinationSQL .= "(2, $animalID, '".Date2MySQL($_POST['bordatella'])."', '".AddDays($_POST['bordatella'], 365)."', 'Initial Intake'),";
                 if (($_POST['rabies'])) $vaccinationSQL .= "(3, $animalID, '".Date2MySQL($_POST['rabies'])."', '".AddDays($_POST['rabies'], 365)."', 'Initial Intake'),";
                 if (($_POST['flea'])) $vaccinationSQL .= "(4, $animalID, '".Date2MySQL($_POST['flea'])."', '".AddDays($_POST['flea'], 30)."', 'Initial Intake'),";
@@ -342,10 +345,9 @@
 	// If this is a new animal, then we want to allow the user to record when he/she came to pixie.
 	if ($animalID==0) { ?>
 	<hr>
-	<h3>Transfered to Pixie:</h3>
-    <table >
+    <table border =1>
         <tr>
-            <td>
+            <td><center><b>Transferred to Pixie</b></center>
                 <table  id=criteria> 
                     <?=trd_labelData("Arrival", date('m/d/y'), "transferDate")?>
                     <?=trd_buildOption("Status", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
@@ -360,17 +362,28 @@
                     </tr>
                 </table>
             </td>
-            <td>
+            <td><center><b>Dogs</b></center>
                 <table id=criteria>
-                    <?=trd_labelData("DHPP (Dog) or FVRCP (cat) (1st)", '', "dhpp1")?>
-                    <?=trd_labelData("DHPP (Dog) or FVRCP (cat) (2nd)", '', "dhpp2")?>
-                    <?=trd_labelData("DHPP (Dog) or FVRCP (cat) (3rd)", '', "dhpp3")?>
-                    <?=trd_labelData("Bordatella (Dog only)", '', "bordatella")?>
+                    <?=trd_labelData("DHPP (1st)", '', "dhpp1")?>
+                    <?=trd_labelData("DHPP (2nd)", '', "dhpp2")?>
+                    <?=trd_labelData("DHPP (3rd)", '', "dhpp3")?>
+                    <?=trd_labelData("Bordatella", '', "bordatella")?>
                     <?=trd_labelData("Heartworm: Date", '', "heartworm")?>
-					<?=trd_labelChk("Heartworm: positive?", "", $heartwormPos)?>
-                    <?=trd_labelData("FELV/FIV: Date (Cat only)", '', "felvfiv")?>
-					<?=trd_labelChk("FELV/FIV: positive?", "felv", $felv)?>
-					<?=trd_labelChk("FELV/FIV: positive?", "fiv", $fiv)?>
+					<?=trd_labelChk("Heartworm: positive?", "", 0)?>
+                </table>
+            </td>
+            <td><center><b>Cats</b></center>
+                <table id=criteria>
+                    <?=trd_labelData("FVRCP (1st)", '', "fvrcp1")?>
+                    <?=trd_labelData("FVRCP (2nd)", '', "fvrcp2")?>
+                    <?=trd_labelData("FVRCP (3rd)", '', "fvrcp3")?>
+                    <?=trd_labelData("FELV/FIV: Date", '', "felvfiv")?>
+					<?=trd_labelChk("FELV: positive?", "felv", 0)?>
+					<?=trd_labelChk("FIV: positive?", "fiv", 0)?>
+                </table>
+            </td>
+            <td><center><b>Both</b></center>
+                <table id=criteria>
                     <?=trd_labelData("Rabies", '', "rabies")?>
                     <?=trd_labelData("Pyrantel (1st)", '', "pyrantel1")?>
                     <?=trd_labelData("Pyrantel (2nd)", '', "pyrantel2")?>
