@@ -82,6 +82,7 @@ Open Applications:
 		<th>Species</th>
         <th>Rank</th>
         <th>Breed</th>
+        <th>Note</th>
 		<th>&nbsp;</th>
 		<th>&nbsp;</th>
 	</tr>
@@ -97,10 +98,11 @@ Open Applications:
 ?>
 	<tr>
 		<td><?= MySql2Date($row['applicationDate']) ?>&nbsp;</td>
-		<td><a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>><?= ($row['isOrg']?"":$row['firstName']." ") ?><?= $row['lastName'] ?></a>&nbsp;</td>
+		<td><a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>><?=$row['firstName']." ".$row['lastName'] ?></a>&nbsp;</td>
 		<td><?= ($row['species']=='D'?"Dog":"Cat")?>&nbsp;</td>
 		<td><?= $row['rank'] ?>&nbsp;</td>
 		<td><?= $row['breed'] ?>&nbsp;</td>
+		<td><?= $row['note'] ?>&nbsp;</td>
 		<td><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>">Edit</td>
         <td><a href="viewApplications.php?applicationID=<?=$row['applicationID']?>&closed=<?=$row['closed']?0:1?>"><?=$row['closed']?"Open":"Close"?></a></td>
 	</tr>

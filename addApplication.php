@@ -179,6 +179,7 @@
 ?>
 
 <font color="red"><?= $errString ?></font>
+
 <form action="" method="POST" enctype="multipart/form-data">
 	<table id=criteria>    
 		<tr>
@@ -256,5 +257,6 @@
 </form>
 
 <?php if ($personID) applicationPanel($personID, $mysqli); ?>
+<p><a href="viewPerson.php?personID=<?=$personID?>">Back to <?=$personName?></a>
 <?php pixie_footer(); ?>
 
