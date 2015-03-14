@@ -140,7 +140,7 @@
                 if (($_POST['dhpp1'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp1'])."', '".AddDays($_POST['dhpp1'], 14)."', 'Initial Intake'),";
                 if (($_POST['dhpp2'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp2'])."', NULL, 'Initial Intake'),";
                 if (($_POST['dhpp3'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp3'])."', NULL, 'Initial Intake'),";
-                if (($_POST['fvrcp1'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp1'])."', '".AddDays($_POST['dhpp1'], 14)."', 'Initial Intake'),";
+                if (($_POST['fvrcp1'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp1'])."', '".AddDays($_POST['fvrcp1'], 14)."', 'Initial Intake'),";
                 if (($_POST['fvrcp2'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp2'])."', NULL, 'Initial Intake'),";
                 if (($_POST['fvrcp3'])) $vaccinationSQL .= "(16, $animalID, '".Date2MySQL($_POST['fvrcp3'])."', NULL, 'Initial Intake'),";
                 if (($_POST['bordatella'])) $vaccinationSQL .= "(2, $animalID, '".Date2MySQL($_POST['bordatella'])."', '".AddDays($_POST['bordatella'], 365)."', 'Initial Intake'),";
