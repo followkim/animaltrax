@@ -360,7 +360,11 @@ function applicationPanel($personID, $mysqli) {
 			</td>
 			<td>
 				<a href="addApplication.php?applicationID=<?= $thisApplication['applicationID'] ?>&action=edit&personID=<?= $thisApplication['personID'] ?>">Edit</a>
-				<a href="addApplication.php?applicationID=<?= $thisApplication['applicationID'] ?>&action=delete&personID=<?= $thisApplication['personID'] ?>">Delete</a>
+				<?php 
+                    $thisPage = basename($_SERVER['PHP_SELF']);
+                    if ($thisApplication['closed']==0) print "<a href=\"".$thisPage."?applicationID=".$thisApplication['applicationID']."&action=close&personID=".$thisApplication['personID']."\">Close</a>";
+                    else print "<a href=\"".$thisPage."?applicationID=".$thisApplication['applicationID']."&action=open&personID=".$thisApplication['personID']."\">Open</a>";
+                ?>
 			</td>
 		</tr>
 		<?php 

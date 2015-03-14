@@ -45,6 +45,13 @@
 		header('Location: ' . $retPage, true, 302);
 	}	
 
+	// If a positionTypeID was passed in, DELETE IT.
+	if ($action) {
+		$sql = "UPDATE Application set closed = ".($action=="close"?1:0)." where applicationID = ".$applicationID.";";
+        $mysqli->query($sql);
+		if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+	}
+
 	// is this a POST?  if so, then we need to grab the posted values and write them to the DB.
 	// If it isn't POST, then set the defaults
 	$isPost = ($_SERVER['REQUEST_METHOD'] == 'POST');

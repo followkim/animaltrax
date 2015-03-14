@@ -25,7 +25,7 @@
 	// something else.  Only "edit", "add" and "delete" are allowed.
 	function validateAction($action) 
 	{
-		if ($action != "edit" and $action !="add" and $action !="delete") return "";
+		if ($action != "edit" and $action !="add" and $action !="delete" and $action != "open" and $action != "close") return "";
 		else return $action;
 	}
 	

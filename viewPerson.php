@@ -17,15 +17,14 @@
 	$action = (isset($_GET['action'])?validateAction($_GET['action']):'');
 	$positionTypeID = (isset($_GET['positionTypeID'])?intval($_GET['positionTypeID']):0);
 	$fileID = (isset($_GET['fileID'])?intval($_GET['fileID']):0);
+	$applicationID = (isset($_GET['applicationID'])?intval($_GET['applicationID']):0);
 
 	// connect to the database, get information on the current animal
 	$mysqli = DBConnect();
 
 	// If there is no animal ID, then redirect to the findAnimal page.
 	// This should NEVER happen.
-	if (isset($_GET['personID'])) {
-		$animalID =  intval($_GET['personID']);
-	} else header('Location: ' . "findPerson.php", true, 302);
+	if ($personID == 0) header('Location: ' . "findPerson.php", true, 302);
 
 	// If a fileID was passed in, DELETE IT.
 	if ($fileID>0) {
@@ -39,6 +38,13 @@
 	if ($positionTypeID>0) {
 		$sql = "DELETE FROM PersonPosition WHERE positionTypeID=$positionTypeID and personID=$personID;"; 
 		$mysqli->query($sql);
+		if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+	}
+
+	// If a positionTypeID was passed in, DELETE IT.
+	if ($applicationID>0) {
+		$sql = "UPDATE Application set closed = ".($action=="close"?1:0)." where applicationID = ".$applicationID.";";
+        $mysqli->query($sql);
 		if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 	}
 
