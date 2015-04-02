@@ -441,12 +441,12 @@ function currentAnimalsPanel($personID, $mysqli) {
                 <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
                 <td><span><?= $row['speciesName'] ?></span></td>
             </tr>
-        </tbody>
 		<?php
 			}
 			$result->close();	
 
 		?>
+        </tbody>
 	</table>
 <?php
 }

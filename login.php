@@ -56,8 +56,8 @@
 				</div>
 			<?php } ?>
 			<div class="Row">
-				<div class="Cell" width="78">Username: </div>
-				<div class="Cell" width="294"><input name="myusername" type="text" id="myusername"></div>
+				<div class="Cell" >Username: </div>
+				<div class="Cell"><input name="myusername" type="text" id="myusername"></div>
 			</div>
 			<div class="Row">
 				<div class="Cell">Password: </div>

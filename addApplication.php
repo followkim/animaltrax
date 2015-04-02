@@ -45,21 +45,14 @@
 		header('Location: ' . $retPage, true, 302);
 	}	
 
-	// If a positionTypeID was passed in, DELETE IT.
-	if ($action) {
-		$sql = "UPDATE Application set closed = ".($action=="close"?1:0)." where applicationID = ".$applicationID.";";
-        $mysqli->query($sql);
-		if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-	}
-
-	// is this a POST?  if so, then we need to grab the posted values and write them to the DB.
+// is this a POST?  if so, then we need to grab the posted values and write them to the DB.
 	// If it isn't POST, then set the defaults
 	$isPost = ($_SERVER['REQUEST_METHOD'] == 'POST');
 	$applicationDate = $isPost?Date2MySQL($_POST['applicationDate']):date('Y-m-d');
 	$species = $isPost?$_POST['species']:"";
 	$gender = $isPost?$_POST['gender']:"";
 	$breed = $isPost?$_POST['breed']:"";
-	$personalityID = $isPost?$_POST['personalityID']:"";
+	$personalityID = $isPost?intval($_POST['personalityID']):"";
 	$minAge = $isPost?intval($_POST['minAge']):0;
 	$maxAge = $isPost?intval($_POST['maxAge']):99;
 	$minWeight = $isPost?intval($_POST['minWeight']):0;
@@ -111,14 +104,14 @@
 				",minAge =  		" .$minAge.
 				",minWeight =  		" .$minWeight.
 				",maxWeight =  		" .$maxWeight.
-				",minActivityLevel = " .$minActivityLevel.
-				",maxActivityLevel = " .$maxActivityLevel.
+				",minActivityLevel= " .$minActivityLevel.
+				",maxActivityLevel= " .$maxActivityLevel.
 				",numKids = 		" .$numKids.
 				",numDogs = 		" .$numDogs.
 				",numCats = 		" .$numCats.
 				",needHypo = 		" .$needHypo.
-				",closed = 		" .$closed.
-				",rank = 		" .$rank.
+				",closed = 		    " .$closed.
+				",rank = 		    " .$rank.
 				",personalityID = 	'" .lbt($personalityID)."'".
 				",note = 			'" .lbt($note)."'".
 				" WHERE applicationID = " .$applicationID.";"
@@ -130,46 +123,55 @@
         header('Location: ' . $retPage, true, 302);		
 	} // END POST
 
-	// Start GET.  First check for a deleted application
-	else if (($action == "delete") && ($applicationID>0)) {			
-		$sql = "DELETE from Application where applicationID=$applicationID;";
-		$mysqli->query($sql);
-		if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-			else header('Location: ' . "viewPerson.php?personID=$personID", true, 302);
-	}
-	
-	// OR, Edit application.  Pull information about the application.
-	if ($applicationID) {
-		// get information about the current animal
-		$applicationSQL =  "SELECT * FROM Application where applicationID = $applicationID";
-	
-		$result = $mysqli->query($applicationSQL);
-		if ($mysqli->errno)  errorPage($mysqli->errno, $mysqli->error, $applicationSQL);
-		else {
-			$row = $result->fetch_array();	// Should just have one record, since fetched by PK.
-			$applicationDate = $row['applicationDate'];
-			$personID = $row['personID'];
-			$species = $row['species'];
-			$minAge = $row['minAge'];
-			$maxAge = $row['maxAge'];
-			$minWeight = $row['minWeight'];
-			$maxWeight = $row['maxWeight'];
-			$breed = $row['breed'];
-			$minActivityLevel = $row['minActivityLevel'];
-			$maxActivityLevel = $row['maxActivityLevel'];
-			$numKids = $row['numKids'];
-			$numDogs = $row['numDogs'];
-			$numCats = $row['numCats'];
-			$personalityID = $row['personalityID'];
-			$needHypo = $row['needHypo'];
-			$closed = $row['closed'];
-			$rank = $row['rank'];
-			$note = $row['note'];
-			$result->close();
-		}
-		
-	}
-	
+	// Start GET.
+	else if ($action && $applicationID) {
+        if ($action == "delete") {			
+            $sql = "DELETE from Application where applicationID=$applicationID;";
+            $mysqli->query($sql);
+            if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+                else header('Location: ' . "viewPerson.php?personID=$personID", true, 302);
+        }	
+        
+        // If an action was passed in, perform IT.  Either open or close an application.
+        else if ($action == "open" or $action == "close") {
+            $sql = "UPDATE Application set closed = ".($action=="close"?1:0)." where applicationID = ".$applicationID.";";
+            $mysqli->query($sql);
+            if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+        }
+    }  
+    
+    // Pull information about the current application.
+    if ($applicationID) {
+        // get information about the current animal
+        $applicationSQL =  "SELECT * FROM Application where applicationID = $applicationID";
+    
+        $result = $mysqli->query($applicationSQL);
+        if ($mysqli->errno)  errorPage($mysqli->errno, $mysqli->error, $applicationSQL);
+        else {
+            $row = $result->fetch_array();	// Should just have one record, since fetched by PK.
+            $applicationDate = $row['applicationDate'];
+            $personID = $row['personID'];
+            $species = $row['species'];
+            $minAge = $row['minAge'];
+            $maxAge = $row['maxAge'];
+            $minWeight = $row['minWeight'];
+            $maxWeight = $row['maxWeight'];
+            $breed = $row['breed'];
+            $minActivityLevel = $row['minActivityLevel'];
+            $maxActivityLevel = $row['maxActivityLevel'];
+            $numKids = $row['numKids'];
+            $numDogs = $row['numDogs'];
+            $numCats = $row['numCats'];
+            $personalityID = $row['personalityID'];
+            $needHypo = $row['needHypo'];
+            $closed = $row['closed'];
+            $rank = $row['rank'];
+            $note = $row['note'];
+            $result->close();
+        }
+        
+    }
+        
 	// If we have a personID, pull information about the current person. (Just the name.)
 	if ($personID) {		
 		// get information about the current Person
@@ -179,6 +181,18 @@
 		else {
 			$row = $result->fetch_array();
 			$personName = ($row['isOrg']?"":$row['firstName']." ") . $row['lastName'];
+			$result->close();
+		}
+    }
+
+	// If we have an animalID, pull information about the current animal. (Just the name.)
+	if ($animalID) {		
+		$animalSQL =  "SELECT animalName from Animal where animalID = $animalID";
+		$result = $mysqli->query($animalSQL);
+		if (!$result)  errorPage($mysqli->errno, $mysqli->error, $animalSQL);
+		else {
+			$row = $result->fetch_array();
+			$animalName = $row['animalName'];
 			$result->close();
 		}
 	}
@@ -263,7 +277,14 @@
 	<a href="<?=$retPage?>">Cancel</a>
 </form>
 
-<?php if ($personID) applicationPanel($personID, $mysqli); ?>
-<p><a href="viewPerson.php?personID=<?=$personID?>">Back to <?=$personName?></a>
+<?php 
+    if ($personID) {
+        applicationPanel($personID, $mysqli); 
+        print "<p><a href=\"viewPerson.php?personID=$personID\">Back to $personName</a>";
+    }
+    if ($animalID) {
+        print "<p><a href=\"viewAnimal.php?animalID=$animalID\">Back to $animalName</a>";
+    }
+?>
 <?php pixie_footer(); ?>
 

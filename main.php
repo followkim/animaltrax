@@ -300,40 +300,10 @@
 		?>
 </table>
 <hr>
+<tablewidth="100%" ><tr><td ><?=currentAnimalsPanel(1, $mysqli)?></td></tr></table>
 
-   <b>Current Animals</b><br>					
-	<table id="sortable" width=100%>		<!-- Current Animals Table-->
-        <thead>
-            <tr>
-                <th><span>Name</span></th>
-                <th><span>Aquired</span></th>
-                <th><span>Species</span></th>
-            </tr>
-        </thead>
-        <tbody>					
-            <!-- insert data-->
-             <?php
-                $atHomeSQL = "select * from CurrentTransfer where personID = 1 order by animalName;";
-                $result = $mysqli->query($atHomeSQL,  MYSQLI_STORE_RESULT);
-                if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $atHomeSQL);
-                 
-                // Generate the table
-                while($row = $result->fetch_array()) {
-            ?>
-            <tr>
-                <td class="lalign"><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
-                <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
-                <td><span><?= $row['speciesName'] ?></span></td>
-            </tr>
-		<?php
-			}
-			$result->close();	
-
-		?>
-        </tbody>
-	</table>
-    <script src="js/tablesorter/jquery-1.11.0.min.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" src="js/tablesorter/jquery.tablesorter.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
     <script type="text/javascript" src="js/pixie.js"></script>
 
 <?php 
