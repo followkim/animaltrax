@@ -52,7 +52,55 @@ ul {
   list-style: none;
  }
 
-	
+
+/**********************************
+Sortable tables
+***********************************/
+
+#sortable table  {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+#sortable thead th { 
+    cursor: pointer;
+    padding: 1px 10px 1px 10px;
+    color: #ffffff;
+    border: 1px solid #FFFFFF;
+	background-color: #818181;
+	white-space: nowrap;
+}
+
+/* Draw the arrows on sort */
+#sortable thead tr th span { 
+  padding-right: 20px;
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+}
+
+#sortable thead tr th.headerSortUp, #sortable thead tr th.headerSortDown {
+	background-color: #8B6914;
+}
+
+#sortable thead tr th.headerSortUp span {
+  background-image: url('../img/arrowDown.png');
+}
+#sortable thead tr th.headerSortDown span {
+  background-image: url('../img/arrowUp.png');
+}
+
+#sortable td {
+    padding: 1px 10px 1px 10px;
+	border: 1px solid #BED630;
+    border-collapse: collapse;
+	background-color: #FFFFFF;
+	white-space: nowrap;
+}
+
+
+#sortable tbody tr td.lalign {
+  text-align: left;
+}
+
 /**********************************
 HEADING
 ***********************************/
@@ -64,9 +112,20 @@ header {
   width: 100%;
 }
 
-#logo {
+td#logo {
   text-align: left;
-  margin: 0;
+  width: 100px;
+}
+
+td#pageTitle {
+  text-align: center;
+  margin: 10px;
+}
+
+td#userInfo {
+  float: right;
+  text-align: right;
+  margin: 10px;
 }
 
 h1 {

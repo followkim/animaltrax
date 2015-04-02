@@ -92,17 +92,19 @@
 <hr>
 
 <!-- Show search Results -->
-<table  id="tabular" width="100%">
-	<tr><td colspan=6>People:</td></tr>
-	<tr>
-		<?=(isset($retPage)?"<th></th>":"")?>
-		<th>Name</th>
-		<th>Address</th>
-		<th>City</th>
-		<th>Email</th>
-		<th>Shelter?</th>
-	</tr>
-
+<table  id="sortable" width="100%">
+    <thead>
+        <tr>
+            <?=(isset($retPage)?"<th></th>":"")?>
+            <th><span>First</span></th>
+            <th><span>Last</span></th>
+            <th><span>Address</span></th>
+            <th><span>City</span></th>
+            <th><span>Email</span></th>
+            <th><span>Shelter?</span></th>
+        </tr>
+    </thead>
+    <tbody>
 <?php
         $findName = str_replace(" ", "%", $name);
 		$findPersonSQL = "CALL FindPerson('".lbt($findName)."', '".lbt($email)."', '".lbt($telephone)."', $positionTypeID, ".($isOrg).")";
@@ -120,7 +122,8 @@
 		<?php	
 			} 
 		?>
-		<td><a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>><?= ($row['isOrg']?"":$row['firstName']." ") ?><?= $row['lastName'] ?></a>&nbsp;</td>
+		<td><a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>><?=$row['firstName']?></a>&nbsp;</td>
+		<td><a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>><?= $row['lastName']?></a>&nbsp;</td>
 		<td><?= $row['address1'] ?>&nbsp;</td>
 		<td><?= $row['city'] ?>&nbsp;</td>
 		<td><?= $row['email'] ?>&nbsp;</td>
@@ -130,8 +133,13 @@
 	}
 	
 ?>
-	<tr><td colspan=6>Found  <?=$result->num_rows?> <?=($result->num_rows==1?"person":"people")?>.</td></tr>
+    </tbody>
 </table>
+Found  <?=$result->num_rows?> <?=($result->num_rows==1?"person":"people")?>.
+<script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="js/pixie.js"></script>
+
 <?php 	
 		$result->close();
 	}

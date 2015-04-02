@@ -417,28 +417,31 @@ function matchesPanel($animalID, $mysqli) {
 
 function currentAnimalsPanel($personID, $mysqli) {
 ?>
-	<table  id=tabular  width=100%>		<!-- Current Animals Table-->
-		<tr><td colspan="4"><b>Current Animals</b></td></tr>					
-		<tr>
-			<th>Name</th>
-			<th>Aquired</th>
-			<th>Species</th>
-		</tr>
-					
-		<!-- insert data-->
-		 <?php
-			$atHomeSQL = "select * from CurrentTransfer where personID = $personID order by animalName;";
-			$result = $mysqli->query($atHomeSQL,  MYSQLI_STORE_RESULT);
-			if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $atHomeSQL);
-			 
-			// Generate the table
-			while($row = $result->fetch_array()) {
-		?>
-		<tr>
-			<td><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></td>
-			<td id=centerHand><?= MySQL2Date($row['transferDate']) ?></td>
-			<td id=centerHand><?= $row['speciesName'] ?></td>
-		</tr>
+    <b>Current Animals</b><br>					
+	<table id="sortable" width=100%>		<!-- Current Animals Table-->
+        <thead>
+            <tr>
+                <th><span>Name</span></th>
+                <th><span>Aquired</span></th>
+                <th><span>Species</span></th>
+            </tr>
+        </thead>
+        <tbody>					
+            <!-- insert data-->
+             <?php
+                $atHomeSQL = "select * from CurrentTransfer where personID = $personID order by animalName;";
+                $result = $mysqli->query($atHomeSQL,  MYSQLI_STORE_RESULT);
+                if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $atHomeSQL);
+                 
+                // Generate the table
+                while($row = $result->fetch_array()) {
+            ?>
+            <tr>
+                <td><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
+                <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
+                <td><span><?= $row['speciesName'] ?></span></td>
+            </tr>
+        </tbody>
 		<?php
 			}
 			$result->close();	

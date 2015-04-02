@@ -74,19 +74,21 @@
 
 <!-- Show applications -->
 Open Applications:
-<table  id="tabular" width="100%">
-	<tr>
-		<?=(isset($retPage)?"<th></th>":"")?>
-		<th>Date</th>
-		<th>Name</th>
-		<th>Species</th>
-        <th>Rank</th>
-        <th>Breed</th>
-        <th>Note</th>
-		<th>&nbsp;</th>
-		<th>&nbsp;</th>
-	</tr>
-
+<table  id="sortable" width="100%">
+    <thead>
+        <tr>
+            <?=(isset($retPage)?"<th></th>":"")?>
+            <th><span>Date</span></th>
+            <th><span>Name</span></th>
+            <th><span>Species</span></th>
+            <th><span>Rank</span></th>
+            <th><span>Breed</span></th>
+            <th><span>Note</span></th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
 <?php
         $findName = str_replace(" ", "%", $name);
 		$sql = "CALL FindApplication('".lbt($findName)."', '".lbt($breed)."', '".lbt($species)."', ".($showClosed).")";
@@ -97,7 +99,7 @@ Open Applications:
 		while($row = $result->fetch_array()) {
 ?>
 	<tr>
-		<td><?= MySql2Date($row['applicationDate']) ?>&nbsp;</td>
+		<td><?= MySql2Date($row['applicationDate']) ?></td>
 		<td><a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>><?=$row['firstName']." ".$row['lastName'] ?></a>&nbsp;</td>
 		<td><?= ($row['species']=='D'?"Dog":"Cat")?>&nbsp;</td>
 		<td><?= $row['rank'] ?>&nbsp;</td>
@@ -110,8 +112,12 @@ Open Applications:
 	}
 	
 ?>
-	<tr><td colspan=7>Found  <?=$result->num_rows?> <?=($result->num_rows==1?"application":"applications")?>.</td></tr>
+    <tbody>
 </table>
+Found  <?=$result->num_rows?> <?=($result->num_rows==1?"application":"applications")?>.
+<script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="js/pixie.js"></script>
 
 <?php 	
 		$result->close();

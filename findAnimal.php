@@ -105,19 +105,21 @@
 <hr>
 
 <!-- Show search Results -->
-<table id=tabular>
-	<tr><td colspan=9>Animals:</td></tr>
-	<tr>
-		<th><b>Name</b></th>
-		<th><b>Species</b></th>
-		<th><b>Age</b></th>
-		<th><b>Caretaker</b></th>
-		<th><b>Status</b></th>
-		<th><b>Date</b></th>
-		<th><b>Microchip Number</b></th>
-		<th><b>Adoptable?</b></th>
-		<th><b>Fixed?</b></th>
-	</tr>
+<table id="sortable">
+    <thead>
+        <tr>
+            <th><span>Name</span></th>
+            <th><span>Species</span></th>
+            <th><span>Age</span></th>
+            <th><span>Caretaker</span></th>
+            <th><span>Status</span></th>
+            <th><span>Date</span></th>
+            <th><span>Microchip Number</span></th>
+            <th><span>Adoptable?</span></th>
+            <th><span>Fixed?</span></th>
+        </tr>
+    </thead>
+    <tbody>
 
 <?php 
 
@@ -144,28 +146,33 @@
 	// to the viewPerson page (with the personID passed in the URL.)
 	while($row = $result->fetch_array()) {
 ?>
-	<tr>
-		<td><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></td>
-		<td><?= $row['speciesName'] ?>&nbsp;</td>
-		<td><?= prettyAge( $row['estBirthdate'], date("Y-m-d")) ?>&nbsp;</td>
+        <tr>
+            <td><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
+            <td><span><?= $row['speciesName'] ?></td>
+            <td><span><?= prettyAge( $row['estBirthdate'], date("Y-m-d")) ?></span></td>
 
-		<td>
-			<a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>>
-				<?= $row['CurrentPerson'] ?>
-			</a>&nbsp;
-		</td>
-		<td><?= $row['transferName'] ?></td>
-		<td><?= MySQL2Date($row['transferDate']) ?>&nbsp;</td>
-		<td><?= $row['microchipNumber'] ?>&nbsp;</td>
-		<td><?= $row['Adoptable'] ?></td>
-		<td><?= $row['Fixed'] ?></td>
-	</tr>
+            <td><span>
+                <a href=<?= "\"viewPerson.php?personID=".$row['personID']."\"" ?>>
+                    <?= $row['CurrentPerson'] ?>
+                </a>&nbsp;
+            </span></td>
+            <td><span><?= $row['transferName'] ?></span></td>
+            <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
+            <td><span><?= $row['microchipNumber'] ?></span></td>
+            <td><span><?= $row['Adoptable'] ?></span></td>
+            <td><span><?= $row['Fixed'] ?></span></td>
+        </tr>
 <?php
 	}
 	
 ?>
-	<tr><td colspan=9>Found  <?=$result->num_rows?> <?=($result->num_rows==1?"animal":"animals")?>.</td></tr>
+    </tbody>
 </table>
+Found  <?=$result->num_rows?> <?=($result->num_rows==1?"animal":"animals")?>.
+
+<script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="js/pixie.js"></script>
 
 <?php 	
 	$result->close();
