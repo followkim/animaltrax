@@ -45,29 +45,30 @@
 
 	pixie_header("Login");
 ?>
+
+<?php if ($error) 
+	echo "<font color='red'>Wrong Username or password!</font>";
+?>
 <p><p>
 <form name="form1" method="post" action="login.php">
 	<center>
-		<div class="Table" width="300">
-			<div class="Title">Member Login:</div>
-			<?php if ($error) { ?>
-				<div class="Title">
-					<font color="red">Wrong Username or password!</font>
-				</div>
-			<?php } ?>
-			<div class="Row">
-				<div class="Cell" >Username: </div>
-				<div class="Cell"><input name="myusername" type="text" id="myusername"></div>
-			</div>
-			<div class="Row">
-				<div class="Cell">Password: </div>
-				<div class="Cell"><input type="password" name="mypassword" id="mypassword"></div>
-			</div>
-			<div class="Row">
-				<div class="Cell">&nbsp;</div>
-				<div class="Cell"><input type="submit" name="Submit" value="Login"></div>
-			</div>
-		</div>
+		<table width="300" id="tabular">
+			<tr >
+				<td colspan=2><b>Member Login:</b></td>
+			</tr>
+			<tr>
+				<td>Username: </td>
+				<td><input name="myusername" type="text" id="myusername"></td>
+			</tr>
+			<tr>
+				<td>Password: </td>
+				<td><input type="password" name="mypassword" id="mypassword"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input type="submit" name="Submit" value="Login"></td>
+			</tr>
+		</table>
 	</center>
 </form>
 <p><p>

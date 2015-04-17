@@ -347,7 +347,7 @@
 	<hr>
     <table border =1>
         <tr>
-            <td><center><b>Transferred to Pixie</b></center>
+            <td  class="intake_pixie"><center><b>Transferred to Pixie</b></center>
                 <table  id=criteria> 
                     <?=trd_labelData("Arrival", date('m/d/y'), "transferDate")?>
                     <?=trd_buildOption("Status", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
@@ -362,7 +362,7 @@
                     </tr>
                 </table>
             </td>
-            <td><center><b>Dogs</b></center>
+            <td class="intake_dogs"><center><b>Dogs</b></center>
                 <table id=criteria>
                     <?=trd_labelData("DHPP (1st)", '', "dhpp1")?>
                     <?=trd_labelData("DHPP (2nd)", '', "dhpp2")?>
@@ -372,7 +372,7 @@
 					<?=trd_labelChk("Heartworm: positive?", "", 0)?>
                 </table>
             </td>
-            <td><center><b>Cats</b></center>
+            <td  class="intake_cats"><center><b>Cats</b></center>
                 <table id=criteria>
                     <?=trd_labelData("FVRCP (1st)", '', "fvrcp1")?>
                     <?=trd_labelData("FVRCP (2nd)", '', "fvrcp2")?>
@@ -400,6 +400,8 @@
 
 	<input type="submit" value="Submit Changes" />  <a href="<?=($animalID?"viewAnimal.php?animalID=$animalID":"findAnimal.php")?>">Cancel</a>
 </form>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/editAnimal.js"></script>
 <?php 
 	pixie_footer(); 
 ?>

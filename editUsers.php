@@ -26,69 +26,66 @@
 	
 	$mysqli = DBConnect();
 	
+	// Get admin info on the logged in user
+	$sql = "select isAdmin from Users WHERE username = '" . $loggedIn_User . "';";	
+	$result = $mysqli->query($sql);
+	
+	if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+	else {
+		$row = $result->fetch_array();
+		$loggedIn_UserAdmin = $row['isAdmin'];
+		$result->close();	
+	}	
+	
 	if ($isPost) {
-		
-		// Check required values
-		if ($p_userName=='') {
-			$errString .= "Fields marked with a * are required.";
-			if ($p_userID) {
-				$userID = $p_userID;
-				$action = "edit";
-			}
-		} else {
-		
-			// EDIT exsisting user
-			if ($p_userID) {
 
-				// Update SELF as user (when new password is provided)
-				if ($newPassword) {
+		// EDIT exsisting user
+		if ($p_userID) {
 
-					if (strlen($newPassword)>4) {
-						$sql = "select userID from Users WHERE userID=$p_userID and password='$oldPassword'";
-						$result = $mysqli->query($sql);
-						if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-						elseif (($result->num_rows)==1) {
-							$result->close();
-							$sql = "update Users set username='$p_userName', password='$newPassword', email='$p_email' WHERE userID=$p_userID and password='$oldPassword'";
-							$mysqli->query($sql);
-							if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-						} else $errString .= "Incorrect username or password.<br>";
-					} else $errString .= "New password must be at least 6 characters long.<br>";
-
-				// Edit other user, or user without changing password
-				} else {
-					$sql = "update Users set username='$p_userName', email='$p_email' WHERE userID=$p_userID";
+			// Update SELF as user (when new password is provided)
+			if ($newPassword) {
+				$sql = "select userID from Users WHERE userID=$p_userID and password='$oldPassword'";
+				$result = $mysqli->query($sql);
+				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+				elseif (($result->num_rows)==1) {
+					$result->close();
+					$sql = "update Users set username='$p_userName', password='$newPassword', email='$p_email' WHERE userID=$p_userID and password='$oldPassword'";
 					$mysqli->query($sql);
 					if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-				}
-				if (strlen($errString)) {
-					$userID = $p_userID;
-					$action="edit";
-				}
-			} // end EDIT
-			
-			// ADD New user 
-			else {
-				if ($password1==$password2) {
-					if (strlen($password1)>4) {
-						$sql = "INSERT into Users (username, email, password) VALUES ('$p_userName',  '$p_email', '$password1')";
-						$mysqli->query($sql);
-						if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-					} else $errString .= "New password must be at least 5 characters long.<br>";
-				} else $errString .= "Passwords don't match!<br>";
+				} else $errString .= "Incorrect username or password.<br>";
+
+			// Edit other user, or user without changing password
+			} else {
+				$sql = "update Users set username='$p_userName', email='$p_email' WHERE userID=$p_userID";
+				$mysqli->query($sql);
+				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			}
-		}			
+			if (strlen($errString)) {
+				$userID = $p_userID;
+				$action="edit";
+			}
+		} // end EDIT
+		
+		// else ADD New user 
+		else {
+			$sql = "INSERT into Users (username, email, password) VALUES ('$p_userName',  '$p_email', '$password1')";
+			$mysqli->query($sql);
+			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+		}
+				
 	} // END POST
 	// Process GET
+	
 	if ($userID) {
 		if ($action=="edit") {		
-			$sql = "select username, email from Users WHERE userID = $userID";	
+			$sql = "select username, email, isAdmin from Users WHERE userID = $userID";	
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			else {
 				$row = $result->fetch_array();
 				$userName = $row['username'];
-				$email = $row['email'];		
+				$email = $row['email'];	
+				$isAdmin = $row['isAdmin'];	
 				$result->close();	
 			}
 		} elseif ($action=="delete") {
@@ -103,28 +100,28 @@
 ?>
 <table id="criteria">
 	<tr><td colspan=2><?= ($action=="edit"?"Edit":"Add") ?> User:</td></tr>
-	<form action="editUsers.php" method="POST">
-		<?php 
-		if ($loggedIn_User==$userName) {
-			echo trd_labelData("User Name", $userName, "username", true);
-			echo trd_labelData("Email", $email, "email");
-			echo trd_labelData("Old Password", $oldPassword, "oldPassword");
-			echo trd_labelData("New Password", $newPassword, "newPassword");
-			
-		} elseif ($action!="edit") { 
-			echo trd_labelData("User Name", $userName, "username", true);
-			echo trd_labelData("Email", $email, "email");
+	<form action="#" method="POST">
+	<?php 
+		echo trd_labelData("User Name", $userName, "username", true);
+		echo trd_labelData("Email", $email, "email");
+		
+		// Add New User
+		if ($action!="edit") { 										
 			echo trd_labelData("Password", $password1, "password1", true, "password");
 			echo trd_labelData("Retype Password", $password2, "password2", true, "password");
-		} else {
-			echo trd_labelData("User Name", $userName);
-			echo trd_labelData("Email", $email, "email");
-		}			
+		} 	
+
+		// Edit current User
+		elseif ($loggedIn_User==$userName or $loggedIn_UserAdmin) {				
+			echo trd_labelData("Old Password", $oldPassword, "password1", true, "password");
+			echo trd_labelData("New Password", $newPassword, "password2", true, "password");
+		} 
+		
 		?>
 		<tr>
 			<td align="right">
 				<input hidden type="txt" name="userID" value="<?= $userID ?>" >
-				<input type="submit" value="<?= ($action=="edit"?"Edit":"Add") ?> User" /> 
+				<input class="submit_button" type="submit" value="<?= ($action=="edit"?"Edit":"Add") ?> User" /> 
 				<a href="editUsers.php">Clear</a>
 			</td>
 		</tr>
@@ -158,8 +155,8 @@
 		while($row = $result->fetch_array()) {
 ?>
 	<tr>
-		<td><?= $row['username'] ?>&nbsp;</td>
-		<td><?= $row['email'] ?>&nbsp;</td>
+		<td><?= $row['username'] ?></td>
+		<td><?= $row['email'] ?></td>
 		<td>
 			<a href="<?= "editUsers.php?userID=".$row['userID']."&action=edit"?>">Edit</a>
 			<!-- a href="<?= "editUsers.php?userID=".$row['userID']."&action=delete"?>">Delete</a -->
@@ -172,6 +169,8 @@
 		<td colspan=3>Found <?=$result->num_rows?> users.</td>
 	</tr>
 </table>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/editUsers.js"></script>
 <?php 	
 	$result->close();
 

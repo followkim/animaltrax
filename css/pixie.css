@@ -141,6 +141,11 @@ h2 {
   font-weight: normal;
 }
 
+span#error {
+	font-size: 0.75em;
+	color: red;
+	font-style: italic;
+}
 
 /**********************************
 NAVIGATION

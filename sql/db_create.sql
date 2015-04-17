@@ -2,9 +2,9 @@ CREATE DATABASE  IF NOT EXISTS `pixie` /*!40100 DEFAULT CHARACTER SET big5 */;
 USE `pixie`;
 -- MySQL dump 10.13  Distrib 5.5.41, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: pixie
+-- Host: 127.0.0.1    Database: pixie
 -- ------------------------------------------------------
--- Server version	5.5.41-0+wheezy1
+-- Server version	5.5.41-0ubuntu0.14.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -62,7 +62,7 @@ CREATE TABLE `Animal` (
   PRIMARY KEY (`animalID`),
   KEY `Animal_ibfk_1` (`microchipTypeID`),
   CONSTRAINT `Animal_ibfk_1` FOREIGN KEY (`microchipTypeID`) REFERENCES `MicrochipType` (`microchipTypeID`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1669 DEFAULT CHARSET=big5;
+) ENGINE=InnoDB DEFAULT CHARSET=big5;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -172,7 +172,7 @@ CREATE TABLE `Application` (
   PRIMARY KEY (`applicationID`),
   KEY `personID` (`personID`),
   CONSTRAINT `Application_ibfk_1` FOREIGN KEY (`personID`) REFERENCES `Person` (`personID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=934 DEFAULT CHARSET=big5;
+) ENGINE=InnoDB DEFAULT CHARSET=big5;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -275,7 +275,7 @@ CREATE TABLE `File` (
   KEY `File_ibfk_2` (`personID`),
   CONSTRAINT `File_ibfk_1` FOREIGN KEY (`animalID`) REFERENCES `Animal` (`animalID`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `File_ibfk_2` FOREIGN KEY (`personID`) REFERENCES `Person` (`personID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=big5;
+) ENGINE=InnoDB DEFAULT CHARSET=big5;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -349,7 +349,7 @@ CREATE TABLE `Person` (
   `note` varchar(150) DEFAULT NULL,
   `isOrg` bit(1) DEFAULT b'0',
   PRIMARY KEY (`personID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1685 DEFAULT CHARSET=big5;
+) ENGINE=InnoDB DEFAULT CHARSET=big5;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -560,6 +560,7 @@ CREATE TABLE `Users` (
   `username` varchar(30) NOT NULL,
   `email` varchar(50) NOT NULL,
   `password` char(128) NOT NULL,
+  `isAdmin` bit(1) NOT NULL,
   PRIMARY KEY (`userID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=big5;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1427,4 +1428,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-03-22 15:59:35
+-- Dump completed on 2015-04-08 15:03:02
