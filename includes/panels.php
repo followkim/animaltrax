@@ -9,6 +9,7 @@
 		  <th>Type</th>
 		  <th>Duration</th>
 		  <th>Fee</th>
+		  <th>Note</th>
 		  <th>&nbsp;</th>
 		</tr>
 		<?php
@@ -28,7 +29,8 @@
 					'personID' => $row['personID'],
 					'transferName' => $row['transferName'],
 					'transferDate' => $row['transferDate'],
-					'fee' => $row['fee']
+					'fee' => $row['fee'],
+					'note' => $row['note']
 				);
 			}
 			for ($i = 0; $i < $numRows; $i++)
@@ -46,6 +48,7 @@
 			<td><?= $transferArray[$i]['transferName'] ?>&nbsp;</td>
 			<td><?= $nextTransfer?prettyAge($transferArray[$i]['transferDate'], $nextTransfer ,false):"&nbsp;"?>&nbsp;</td>
 			<td><?= $transferArray[$i]['fee']>0?"$".$transferArray[$i]['fee']:"&nbsp;" ?></td>
+			<td><?= $transferArray[$i]['note'] ?>&nbsp;</td>
 			<td>
 				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=viewAnimal" ?>">Delete</a>
 				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=viewAnimal" ?>">Edit</a>							
@@ -87,14 +90,14 @@ function vitalsPanel ($animalID, $species, $mysqli) {
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			$lastDate = 0; 
-			$i=0;
+			$i=-1;
 			while ($row=$result->fetch_array()) {
-				$vitalDates[$i]['date']=MySQL2Date($row['vitalDateTime']);
-				$vitalDates[$i][$row['vitalSignTypeID']]=$row['vitalValue'];
-				if ($lastDate != $row['vitalDateTime']) {
-					$lastDate = $row['vitalDateTime'];
+				if ($lastDate != MySQL2Date($row['vitalDateTime'])) {
+					$lastDate = MySQL2Date($row['vitalDateTime']);
 					$i++;
 				}
+				$vitalDates[$i]['date']=MySQL2Date($row['vitalDateTime']);
+				$vitalDates[$i][$row['vitalSignTypeID']]=$row['vitalValue'];
 			}
 			$result->close();
 
@@ -142,10 +145,10 @@ function filesPanel($id, $who, $mysqli) {
 				$fileURL = $row['fileURL'];
 		?>
 		<tr>
-			<td><a href="<?= $fileURL ?>"><?= $fileName ?></a></td>
+			<td><a href="<?= $fileURL ?>" target="_blank"><?= $fileName ?></a></td>
 			<td><?= MySQL2Date($dateUploaded) ?></td>
 			<td>
-				<a href="<?= $fileURL ?>">Download</a>
+				<a href="<?= $fileURL ?>" target="_blank">Download</a>
 				<a href="<?= ($who=='A'?"viewAnimal":"viewPerson")?>.php?<?= ($who=='A'?"animalID":"personID")?>=<?=$id?>&fileID=<?=$fileID?>">Delete</a>
 			</td>
 		</tr>
@@ -412,6 +415,41 @@ function matchesPanel($animalID, $mysqli) {
 		?>
 	</table> 	
 <?php
+}
+
+function matchesPanelMain($mysqli) {
+
+?>
+
+	<table  id="tabular" width="100%"> 					
+		<tr><td style="vertical-align: top; width: 100%;" colspan="5"><b>Possible Matches</b></td></tr>
+		<tr>
+		  <th>Date</th>
+		  <th>Animal</th>
+		  <th>Potential Owner</th>
+		  <th>&nbsp;</th>
+		</tr>
+		<?php
+			$sql = "call matchAnimals(0, 0);";
+			$result = $mysqli->query($sql);
+			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+			else {
+				while($row = $result->fetch_array()) {
+		?>
+		<tr>
+			<td id=centerHand><?=MySQL2Date($row['applicationDate'])?></td>
+			<td id=rightHand><a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a></td>
+			<td id=rightHand><a href="viewPerson.php?personID=<?=$row['personID']?>"><?=$row['firstName']?> <?=$row['lastName']?></a></td>
+			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$row['animalID']?>">Edit/View</a></td>
+		</tr>
+		<?php
+				}
+				$result->close();
+				freeResult($mysqli);
+			}
+		?>
+	</table> 	
+<?php
 
 }
 
@@ -424,6 +462,7 @@ function currentAnimalsPanel($personID, $mysqli) {
                 <th><span>Name</span></th>
                 <th><span>Aquired</span></th>
                 <th><span>Species</span></th>
+                <th><span>Status</span></th>
             </tr>
         </thead>
         <tbody>					
@@ -440,6 +479,7 @@ function currentAnimalsPanel($personID, $mysqli) {
                 <td><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
                 <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
                 <td><span><?= $row['speciesName'] ?></span></td>
+                <td><span><?= $row['Status'] ?></span></td>
             </tr>
 		<?php
 			}
@@ -450,6 +490,48 @@ function currentAnimalsPanel($personID, $mysqli) {
 	</table>
 <?php
 }
+
+function pixieAnimalsPanel($personID, $mysqli) {
+?>
+    <b>Current Animals</b><br>
+        <table id="sortable" width=100%>                <!-- Current Animals Table-->
+        <thead>
+            <tr>
+                <th><span>Name</span></th>
+                <th><span>Aquired</span></th>
+                <th><span>Species</span></th>
+                <th><span>Status</span></th>
+                <th><span>Location</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- insert data-->
+             <?php
+                $atHomeSQL = "select * from CurrentTransfer where pixieResponsible = 'Y'  order by animalName;";
+                $result = $mysqli->query($atHomeSQL,  MYSQLI_STORE_RESULT);
+                if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $atHomeSQL);
+                 
+                // Generate the table
+                while($row = $result->fetch_array()) {
+            ?>
+            <tr>
+                <td><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
+                <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
+                <td><span><?= $row['speciesName'] ?></span></td>
+                <td><span><?= $row['Status'] ?></span></td>
+                <td><span><?= $row['CurrentPerson'] ?></span></td>
+            </tr>
+                <?php
+                        }
+                        $result->close();       
+
+                ?>
+        </tbody>
+        </table>
+<?php
+}
+
+
 	
 function historyPanel($personID, $mysqli) {
 ?>

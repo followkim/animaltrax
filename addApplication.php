@@ -70,7 +70,7 @@
 	// Check required POST variables
 	if ($isPost) {
 		if ($species == "") $errString .=  "Species is required!<br>";
-		if ($breed == "") $errString .=  "Breed is required!<br>You can also use a description in this field, like <i>'small dog'</i> or <i>'sweet cat'</i>.<br>";
+//		if ($breed == "") $errString .=  "Breed is required!<br>You can also use a description in this field, like <i>'small dog'</i> or <i>'sweet cat'</i>.<br>";
 		if ($applicationDate == "") $errString .=  "Application Date is required!<br>";
 	}
 	
@@ -83,12 +83,13 @@
 			$insertSQL = sprintf("INSERT INTO pixie.Application (
 				personID, applicationDate, species, gender,breed,
 				minAge, maxAge, minWeight, maxWeight, minActivityLevel, maxActivityLevel,
-				numKids, numDogs, numCats, needHypo, closed, rank, personalityID, note) 
-				VALUES (%s, '%s', '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, '%s', '%s');", 
+				numKids, numDogs, numCats, needHypo, closed, personalityID, note) 
+				VALUES (%s, '%s', '%s', '%s', '%s',   %s, %s, %s, %s, %s, %s,     %s, %s, %s, %s, '%s', '%s', '%s');", 
 				$personID, $applicationDate, lbt($species), lbt($gender), lbt($breed), 
 				$minAge, $maxAge, $minWeight, $maxWeight, $minActivityLevel, $maxActivityLevel,
 				$numKids, $numDogs, $numCats, $needHypo, $closed, $rank, lbt($personalityID), lbt($note)
 			);
+			print($insertSQL);
 			$mysqli->query($insertSQL);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $insertSQL);
 		}
@@ -111,7 +112,6 @@
 				",numCats = 		" .$numCats.
 				",needHypo = 		" .$needHypo.
 				",closed = 		    " .$closed.
-				",rank = 		    " .$rank.
 				",personalityID = 	'" .lbt($personalityID)."'".
 				",note = 			'" .lbt($note)."'".
 				" WHERE applicationID = " .$applicationID.";"
@@ -212,7 +212,7 @@
 						<td><input size=2 name="minAge" value="<?=$minAge?>" type="txt"> and 
 							<input size=2 name="maxAge" value="<?=$maxAge?>" type="txt"> years</td>
 					</tr>
-					<?=trd_labelData("Desired Breed", $breed, "breed", true)?>
+					<?=trd_labelData("Desired Breed", $breed, "breed")?>
 					<tr> <!-- Species -->
 						<td id="leftHand"><b>Species*</b></td><td id="rightHand"><select name=species>
 								<option value=""></option>

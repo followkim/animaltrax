@@ -65,7 +65,7 @@
 	if ($isPost) {
 		// Pull in and validate POST varibles
 		$p_action = validateAction($_POST['p_action']);	// Hidden field
-		$p_transferDate = Date2MySQL($_POST['transferDate']);
+		$p_transferDate = date("Y-m-d", strtotime($_POST['transferDate'])) . " " . date("H:i", strtotime($_POST['transferTime']));
 		$transferTypeID = intval($_POST['transferTypeID']);
 		$fee = lbt($_POST['fee'])+0;
 		$note = lbt($_POST['note']);
@@ -132,6 +132,7 @@
 				<?=($estBirthdate?trd_labelData( "Age", prettyAge( $estBirthdate, date("Y-m-d"))):"") ?>
 				<?=trd_labelData( "Species", $species) ?>
 				<tr style="vertical-align: top;"><td colspan=2><a href="<?= "viewAnimal.php?animalID=$animalID"?>">Back to <?= $animalName ?></a></td></tr>
+				<tr style="vertical-align: top;"><td colspan=2><a href="<?= "findAnimal.php"?>">Select Different Animal</a></td></tr>
 			</table>
 		</td>
 		<td width="50%" rowspan=2>		<!-- STEP 3: Transfer details -->
@@ -143,24 +144,28 @@
 					?>
 						<?php
 							if ($transferDate) {
-								$sql = "select * from Transfer where personID = $personID and animalID=$animalID and transferDate = '".Date2MySQL($transferDate)."'";
+								$sql = "select * from Transfer where personID = $personID and animalID=$animalID and transferDate = '".DateTime2MySQL($transferDate)."'";
 								$result = $mysqli->query($sql);
 								if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 								$row = $result->fetch_array();
 								$transferDate = MySQL2Date($row['transferDate']);
 								$transferTypeID = $row['transferTypeID'];
+								print($transferTypeID);
 								$fee = $row['fee'];
 								$note = $row['note'];
 								$p_action="edit";
 							} else {
-								$transferDate = date("m/d/y");
-								$transferTypeID = $fee = $note = '';
+								$transferDate = date("Y-m-d H:i");
+								$transferTypeID = $note = '';
+								$fee=0;
 								$p_action="add";
+
 							}		
 						?>
-					<?= trd_labelData("Transfer Date", $transferDate, "transferDate", true) ?>
+					<?= trd_labelData("Transfer Date", date("Y-m-d", strtotime($transferDate)), "transferDate", true, "date") ?>
+					<?= trd_labelData("Transfer Time", date("H:i", strtotime($transferDate)), "transferTime", true, "time") ?>
 					<?php 
-						if ($personID==1) {	// Pixie							
+						if ($personID==1) {	// Pixie	America/Los_Angeles						
 							echo trd_labelData("Transfer Type", "Pixie");
 							echo "<input hidden type=\"txt\" name=\"transferTypeID\" value=\"1\">";
 						} else if ($thisPerson['isOrg']) {
@@ -268,7 +273,7 @@
 			else $nextTransfer = date("m/d/y");
 	?>
 	<tr>
-		<td><?= MySQL2Date($transferArray[$i]['transferDate']) ?></td>
+		<td><?= MySQL2DateTime($transferArray[$i]['transferDate']) ?></td>
 		<td>
 			<a href=<?= "\"viewPerson.php?personID=".$transferArray[$i]['personID']."\"" ?>>
 			<?= $transferArray[$i]['Name'] ?></a>

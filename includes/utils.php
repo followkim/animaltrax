@@ -142,14 +142,37 @@
 	}
 	
 	// Returns a string in the MySQL format (Y-m-d)
+	function DateTime2MySQL($inDate) {
+		if ($inDate != "") return date("Y-m-d H-i-s", strtotime($inDate));
+		else return "";
+	}
+
+	// Returns a string in the MySQL format (Y-m-d)
 	function Date2MySQL($inDate) {
 		if ($inDate != "") return date("Y-m-d", strtotime($inDate));
 		else return "";
 	}
 	
 	// Returns a string in the standard format (d/m/y)
+	function MySQL2DateTime($inDate) {
+		$preferredDateStr = 'm/d/y h:i a';
+		if ($inDate != "")
+			return date($preferredDateStr, strtotime($inDate));	
+		else return "";
+	}
+
+
+	// Returns a string in the standard format (d/m/y)
 	function MySQL2Date($inDate) {
 		$preferredDateStr = 'm/d/y';
+		if ($inDate != "")
+			return date($preferredDateStr, strtotime($inDate));	
+		else return "";
+	}
+
+	// Returns a string in the standard time
+	function MySQL2Time($inDate) {
+		$preferredDateStr = 'h:i:sa';
 		if ($inDate != "")
 			return date($preferredDateStr, strtotime($inDate));	
 		else return "";

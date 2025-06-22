@@ -50,9 +50,9 @@
 	$dateImplanted = $isPost?Date2MySQL($_POST['dateImplanted']):"";
 	$url = (isset($_POST['url'])?$_POST['url']:"");
 	$isFixed = (isset($_POST['isFixed'])?1:0);
-	$kids = ($isPost?$_POST['kids']:0);
-	$dogs = ($isPost?$_POST['dogs']:0);
-	$cats = ($isPost?$_POST['cats']:0);
+	$kids = ($isPost?$_POST['kids']:'U');
+	$dogs = ($isPost?$_POST['dogs']:'U');
+	$cats = ($isPost?$_POST['cats']:'U');
 	$adoptionStatusID = $isPost?$_POST['adoptionStatusID']:'';
 	$personalityID = $isPost?($_POST['personalityID']):'';
 	$isHypo = (isset($_POST['isHypo'])?1:0);
@@ -70,7 +70,7 @@
 	if ($isPost and ($errString == "")) {
 		
 		// Calculate the birthdate if an interval was used (otherwise use $estbirthdateNumber)
-		if ($estbirthdateNumber!="") {
+		if ($estbirthdateNumber>0) {
 			$date=date_create(date('Y-m-d'));
 			date_sub($date,new DateInterval('P'.$estbirthdateNumber.$estbirthdateInterval[0]));
 			$estBirthdate = date_format($date,"Y-m-d");
@@ -81,23 +81,12 @@
 		$dateImplanted = ($dateImplanted!=''?"'$dateImplanted'":"NULL");
 		$microchipTypeID = ($microchipTypeID>0?$microchipTypeID:"NULL");
 
-		// Was a file uploaded?  If so, upload and overwrite the URL with the uploaded file.
-		if (isset($_FILES["fileToUpload"]["name"])) {
-			$target_dir = "img/";
-			$fileName = basename($_FILES["fileToUpload"]["name"]);
-			$target_file = $target_dir . $fileName;
-
-			if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-				$url = $target_file;
-			} else echo "Sorry, there was an error uploading your file: $fileName";
-		}
-
 		// ADD NEW ANIMAL
 		// As there isn't a animalID, we must be trying to add a new critter
 		// Take the user to addTransfer when done
 		if ($animalID == 0) {			
 			$transferDate = Date2MySQL($_POST['transferDate']);
-			$fee = $_POST['fee']+0;
+			$fee = isset($POST_['fee'])?$_POST['fee']+0:0;
 			$transferNote = $_POST['transferNote'];
 			
 			$insertAnimalSQL = sprintf("insert into Animal 
@@ -136,7 +125,9 @@
 				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $insertTransferSQL);
                 
                 // Add vaccinations
-                $vaccinationSQL = "insert into Prescription (medicationID, animalID, startDate, nextDose, note) VALUES  ";
+                $vaccinationSQLInsert = "insert into Prescription (medicationID, animalID, startDate, nextDose, note) VALUES  ";
+                $vaccinationSQL = $vaccinationSQLInsert;
+
                 if (($_POST['dhpp1'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp1'])."', '".AddDays($_POST['dhpp1'], 14)."', 'Initial Intake'),";
                 if (($_POST['dhpp2'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp2'])."', NULL, 'Initial Intake'),";
                 if (($_POST['dhpp3'])) $vaccinationSQL .= "(1, $animalID, '".Date2MySQL($_POST['dhpp3'])."', NULL, 'Initial Intake'),";
@@ -148,28 +139,37 @@
                 if (($_POST['flea'])) $vaccinationSQL .= "(4, $animalID, '".Date2MySQL($_POST['flea'])."', '".AddDays($_POST['flea'], 30)."', 'Initial Intake'),";
                 if (($_POST['pyrantel1'])) $vaccinationSQL .= "(5, $animalID, '".Date2MySQL($_POST['pyrantel1'])."', '".AddDays($_POST['pyrantel1'], 30)."', 'Initial Intake'),";
                 if (($_POST['pyrantel2'])) $vaccinationSQL .= "(5, $animalID, '".Date2MySQL($_POST['pyrantel2'])."', NULL, 'Initial Intake'),";
-                $vaccinationSQL = substr($vaccinationSQL, 0, -1) . ";";
-                $mysqli->query($vaccinationSQL);
-                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $vaccinationSQL);
+		if (strcmp($vaccinationSQLInsert, $vaccinationSQL) != 0) {
+	                $vaccinationSQL = substr($vaccinationSQL, 0, -1) . ";";
+	                $mysqli->query($vaccinationSQL);
+	                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $vaccinationSQL);
+		}
 
                 // Add tests
-                $testSQL = "insert into Test (testTypeID, animalID, testDate, testResult, note) VALUES  ";
+                $testSQLInsert = "insert into Test (testTypeID, animalID, testDate, testResult, note) VALUES  ";
+                $testSQL = $testSQLInsert;
                 if (($_POST['heartworm'])) $testSQL .= "(1, $animalID, '".Date2MySQL($_POST['heartworm'])."', ".($heartwormPos?"'positive'":"'negative'").", 'Initial Intake'),";
                 if (($_POST['felvfiv'])) $testSQL .= "(2, $animalID, '".Date2MySQL($_POST['felvfiv'])."', ".($fiv?"'positive'":"'negative'").", 'Initial Intake'),";
                 if (($_POST['felvfiv'])) $testSQL .= "(3, $animalID, '".Date2MySQL($_POST['felvfiv'])."',".($felv?"'positive'":"'negative   12/31/  '").", 'Initial Intake'),";
-                $testSQL = substr($testSQL, 0, -1) . ";";
-                $mysqli->query($testSQL);
-                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $testSQL);
+
+		if (strcmp($testSQLInsert, $testSQL) != 0) {
+	                $testSQL = substr($testSQL, 0, -1) . ";";
+	                $mysqli->query($testSQL);
+	                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $testSQL);
+		}
 
                 // Add weight
-                $vitalsSQL = "insert into VitalSign (vitalSignTypeID, animalID, vitalDateTime, vitalValue, note) VALUES  ";
-               if (isset($_POST['weightDate'])) $vitalsSQL .= "(7, $animalID, '".Date2MySQL($_POST['weightDate'])."', ".lbt($_POST['weightValue']).", 'Initial Intake');";
-                $mysqli->query($vitalsSQL);
-                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $vitalsSQL);
+		if (isset($_POST['weightValue']) and is_numeric($_POST['weightValue'])) {
+                	$vitalsSQL = "insert into VitalSign (vitalSignTypeID, animalID, vitalDateTime, vitalValue, note) VALUES  ";
+                	$vitalsSQL .= "(7, $animalID, '".Date2MySQL($_POST['weightDate'])."', ".lbt($_POST['weightValue']).", 'Initial Intake');";
+                        print($vitalsSQL);
+	                $mysqli->query($vitalsSQL);
+	                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $vitalsSQL);
+		}
+//				header("location:addTransfer.php?animalID=".$animalID);
+				header("location:viewAnimal.php?animalID=".$animalID);
 
-				header("location:addTransfer.php?animalID=".$animalID);
-
-        } // end add new
+        } // end add new animal
 			else errorPage($mysqli->errno, "Unable to find newly inserted animal ($animalID)", $getAnimalSQL);
 
 		}
@@ -192,6 +192,29 @@
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			else header('Location: ' . "viewAnimal.php?animalID=$animalID", true, 302);
 		}
+
+		// Was a file uploaded?  If so, upload and overwrite the URL with the uploaded file.
+		if (isset($_FILES["fileToUpload"]["name"])) {
+			$target_dir = "uploads/";
+                        $dateUploaded = date('Y-m-d');
+			$fileName = basename($_FILES["fileToUpload"]["name"]);
+			$target_file = $target_dir . $fileName;
+
+			if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+				$url = $target_file;
+                                $sql ="insert into File (fileName, fileURL, dateUploaded, animalID )
+                                                VALUES ('$fileName', '$target_file', '$dateUploaded', $animalID);";
+                                $mysqli->query($sql);
+                                if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $animalInfoSQL);
+
+				// set the url
+				$sql = sprintf("update Animal set url = '%s' where animalID = %s;", lbt($url), $animalID);
+	                        $result = $mysqli->query($sql);
+	                        if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+ 
+			} else echo "Sorry, there was an error uploading your file: $fileName";
+		}
+
 	} // END POST
 
 	// Start GET
@@ -274,7 +297,6 @@
 						<td style="text-align: right;"><b>Species*</b> </td>
 						<td style="text-align: left;">
 							<select name=species>
-								<option value=""></option>
 								<option value="D" <?= ($species=='D')?"selected":"" ?>>Dog</option>
 								<option value="C" <?= ($species=='C')?"selected":"" ?>>Cat</option>
 								<option value="O" <?= ($species=='O')?"selected":"" ?>>Other</option>
@@ -317,13 +339,14 @@
 						</td>
 					</tr>
 					<?=trd_labelChk("Hypoallergetic Breed?", "isHypo", $isHypo)?>
-					<?=trd_buildOption("Adoption Status", "AdoptionStatus", "adoptionStatusID", "adoptionStatus", $adoptionStatusID, "retPage=editAnimal&animalID=$animalID", $mysqli, true) ?>
+					<?=trd_buildOption("Adoption Status", "AdoptionStatus", "adoptionStatusID", "adoptionStatus", $animalID==0?"P":$adoptionStatusID, "retPage=editAnimal&animalID=$animalID", $mysqli, false) ?>
+
 				</table>
 			</td>
 			<td>	<!-- Column 3 -->
 				<table>
 					<?php if ($species) { ?>
-					<tr><td colspan="2"><b>Picture: </b><br><img src="<?= ($url==""?"img/$l_species.jpg":$url) ?>"></img></td></tr>
+					<tr><td colspan="2"><b>Picture: </b><br><img class="animal-picture" src="<?= ($url==""?"img/$l_species.jpg":$url) ?>"></img></td></tr>
 					<?php } ?>
 					<?=trd_labelData("Picture URL", $url, "url")?>
 					<tr><td colspan="2">
@@ -350,15 +373,15 @@
             <td  class="intake_pixie"><center><b>Transferred to Pixie</b></center>
                 <table  id=criteria> 
                     <?=trd_labelData("Arrival", date('m/d/y'), "transferDate")?>
-                    <?=trd_buildOption("Status", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
-                    <?=trd_labelData("Intake Fee", "", "fee")?>
+                    <?=trd_buildOption("Location", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
+                    <?=trd_labelData("Intake Fee", 0, "fee")?>
                     <tr><td></td><td><i>Use a negative number if Pixie paid this fee.</i></td></tr>
                     <tr>
                         <td style="text-align: right;"><b>Notes: </b></td>
                         <td style="text-align: left;"><b><textarea type="memo" name="transferNote" cols="30"></textarea></td>
                     </tr>	
                     <tr>
-                        <td colspan="2">Note: You will add the <u>initial transfer information</u> on the next page.</td>
+                        <!-- td colspan="2">Note: You will add the <u>initial transfer information</u> on the next page.</td -->
                     </tr>
                 </table>
             </td>
@@ -388,7 +411,7 @@
                     <?=trd_labelData("Pyrantel (1st)", '', "pyrantel1")?>
                     <?=trd_labelData("Pyrantel (2nd)", '', "pyrantel2")?>
                     <?=trd_labelData("Flea Treatment", '', "flea")?>
-                    <?=trd_labelData("Initial Weight: Date", '', "weightDate")?>
+                    <?=trd_labelData("Initial Weight: Date", date('m/d/y'), "weightDate")?>
                     <?=trd_labelData("Initial Weight: Value", '', "weightValue")?>
                 </table>
             </td>

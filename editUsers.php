@@ -60,7 +60,7 @@
 				$mysqli->query($sql);
 				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			}
-			if (strlen($errString)) {
+			if (strlen($errString)>0) {
 				$userID = $p_userID;
 				$action="edit";
 			}
@@ -68,7 +68,7 @@
 		
 		// else ADD New user 
 		else {
-			$sql = "INSERT into Users (username, email, password) VALUES ('$p_userName',  '$p_email', '$password1')";
+			$sql = "INSERT into Users (username, email, password) VALUES ('$p_userName',  '$p_email', '$password1');";
 			$mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 		}
@@ -100,7 +100,7 @@
 ?>
 <table id="criteria">
 	<tr><td colspan=2><?= ($action=="edit"?"Edit":"Add") ?> User:</td></tr>
-	<form action="#" method="POST">
+	<form action="" method="POST">
 	<?php 
 		echo trd_labelData("User Name", $userName, "username", true);
 		echo trd_labelData("Email", $email, "email");

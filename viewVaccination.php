@@ -1,4 +1,5 @@
 <?php 
+
 	
 	/*
 	 * viewVaccionation.php
@@ -21,6 +22,9 @@
 	// Pull in the main includes file
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
+
+	error_reporting(E_ALL);
+	ini_set('display_errors', 1);
 	
 	// Get the current user, if not logged in redirect to the login page.
 	$userName = getLoggedinUser();
@@ -74,22 +78,22 @@
 	$p_action = $isPost?$_POST['action']:"";
 
 	// For POST, we are either updating or editing.  Check what was posted through "action" (a hidden input field.)
-	if ($isPost) {	
+	if ($isPost) {
 		$qExpDate = lbt($expDate);
 		$qLot = lbt($lot);
 		$qNote = lbt($note);
 		
 		// If the interval method is used, determine the new nextDose
-		if ($nextDoseNumber!="") {
+		if ($nextDoseNumber!=0) {
 			$date=date_create($p_startDate);
-			date_add($date,new DateInterval('P'.$nextDoseNumber.$nextDoseInterval));
+			date_add($date,new DateInterval('P'.$nextDoseNumber.$nextDoseInterval[0]));
 			$nextDose = date_format($date,"Y-m-d");
-		} 
+		}
 
 		// Do some error checking
-		if ($nestDose != "" and $nextDose <= $p_startDate) $errString .= "<b>Next Dose</b> can't be less then the administration date.<br>";
+		if ($nextDose != "" and $nextDose <= $p_startDate) $errString .= "<b>Next Dose</b> ($nextDose) can't be less then the administration date ($p_startDate).<br>";
 		if ($p_startDate == "") $errString .= "<b>Date Given</b> is a required field.<br>";
-		if ($p_startDate <= $estBirthdate) $errString .= "<b>Next Dose</b> can't be less then $animalName's birthdate (".MySQL2Date($estBirthdate).")<br>";
+		if ($p_startDate < $estBirthdate) $errString .= "<b>Next Dose</b> can't be less then $animalName's birthdate (".MySQL2Date($estBirthdate).")<br>";
 		if ($p_startDate > date('Y-m-d')) $errString .= "<b>Next Dose</b> can't be greater then today.<br>";
 		
 		// If we don't have any errors, then we should continue.
@@ -97,20 +101,26 @@
 
 			// Fix nextDose
 			if ($nextDose != '') $nextDose = "'$nextDose'";
-			else $nextDose = "NULL";			
-		
+			else $nextDose = "NULL";
+
+			$checkSQL = "select * from Prescription where medicationID = $p_medicationID and animalID = $animalID and startDate = '$p_startDate'";
 			$insertSQL = "insert into Prescription VALUES 
 				($p_medicationID, $animalID, '$p_startDate', '$qLot', '$qExpDate', '$qNote', $nextDose);";
 			$updateSQL = "update Prescription set medicationID=$p_medicationID, startDate='$p_startDate', 
 					lot='$qLot', expDate='$qExpDate', nextDose=$nextDose, note='$qNote'
-					WHERE medicationID=$medicationID and animalID=$animalID and startDate='$startDate';";
+					WHERE medicationID=$p_medicationID and animalID=$animalID and startDate='$startDate';";
+			if ($p_action=="edit") $mysqli->query($updateSQL);
+			else {
+				// check to see if row exsits.  If does, treat as edit.  Otherwise, add it.
+				$rowExists = $mysqli->query($checkSQL);
+				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
+	
+				if ($rowExists->num_rows == 0) $mysqli->query($insertSQL);
+				else $mysqli->query($updateSQL);
 
-			$mysqli->query($p_action=="edit"?$updateSQL:$insertSQL);
-			if ($mysqli->errno) {
-				if ($mysqli->errno == 1062) $errString .= "You can't add the same vaccination on the same day.<br>";
-				else errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
+				if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
 			}
-			
+
 			// If a return page was given, navigate back to it after the update/delete.
 			if ($retPage) header("location:$retPage.php?animalID=$animalID");
 
@@ -124,7 +134,7 @@
 	// Otherwise, this is a GET request-- prepare to either delete or edit
 	else {	
 
-		if ($action == "delete") {	
+		if ($action == "delete") {
 			$sql = "delete from Prescription WHERE animalID=$animalID and medicationID=$medicationID and startDate = '$startDate';";
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
@@ -165,7 +175,9 @@
 		$vaccRows = $vaccList->fetch_array();
 		$vaccListArray[] = array (
 			'medicationID' 		=> $vaccRows['medicationID'],
-			'medicationName' 	=> $vaccRows['medicationName']
+			'medicationName' 	=> $vaccRows['medicationName'],
+			'nextDoseDays'		=> $vaccRows['nextDoseDays'],
+			'adminInfo'		=> []
 		);
 	}
 	$vaccList->close();
@@ -220,7 +232,7 @@
 					<?= trd_labelData( "Next Due", MySQL2Date($nextDose), "nextDose") ?>
 					<tr>
 						<td></td>
-						<td style="text-align: left;" >Or: <input type="txt" size=7 name="nextDoseNumber" value="<?= $nextDoseNumber ?>"><select name="nextDoseInterval">
+						<td style="text-align: left;" >Or: <input type="txt" size=7 name="nextDoseNumber" value="" ><select name="nextDoseInterval">
 									<option <?= ($nextDoseInterval=="D"?"selected":"") ?>value="D">Days</option>
 									<option <?= ($nextDoseInterval=="W"?"selected":"") ?>value="W">Weeks</option>
 									<option <?= ($nextDoseInterval=="M"?"selected":"") ?>value="M">Months</option>
@@ -273,7 +285,6 @@
 	  <th>Note</th>
 	  <th>&nbsp;</th>
 	</tr>
-	<tr>
 		<?php
 			for ($i = 0; $i < count($thisVacc['adminInfo']); $i++) {
 				$nextDose = $thisVacc['adminInfo'][$i]['nextDose'];

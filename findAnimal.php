@@ -32,7 +32,7 @@
 	$microchipNumber = ($isPost?lbt($_POST['microchipNumber']):"");
 	$species = ($isPost?$_POST['species']:"");
 	$gender = ($isPost?$_POST['gender']:"");
-	$onlyAdoptable = isset($_POST['onlyAdoptable'])?1:0;
+	$onlyAdoptable = $isPost?isset($_POST['onlyAdoptable'])?1:0:1;
 	$notFixed = isset($_POST['notFixed']);
 	$transferTypeID = ($isPost?intval($_POST['transferTypeID']):"0");	// 1 is Pixie, use as default
 	$start = ($isPost?$_POST['start']:''); //date('m/d/y',strtotime('first day of last month')));

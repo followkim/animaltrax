@@ -44,7 +44,7 @@
 				if ($incBlank) echo "<option></option>";
 				while($row = $result->fetch_array()) {
 				?>
-					<option value="<?= $row[$idName] ?>"><?= $row[$labelName] ?></option>
+					<option value="<?= $row[$idName] ?>" <?= $thisID==$row[$idName]?"selected":""?>><?= $row[$labelName] ?></option>
 				<?php
 					}
 					$result->close();	
@@ -77,6 +77,7 @@
 <?php
 	}
 	function pixie_header($pageName, $userName = "", $url="") {
+	date_default_timezone_set('America/Los_Angeles');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -93,11 +94,11 @@
 		<table>
 			<tr>
 				<!-- Pixie Icon -->
-				<td ><img width=100 src="./img/PixieLogo.png"></td>
+				<td ><center><a href="main.php"><img width=100 src="./img/PixieLogo.png"><center></a></td>
 
 				<!-- Banner title -->
 				<td style="vertical-align: bottom;">
-				<font size=6><b><center>Pixie Project Electronic Health Record System</center></b></font>
+				<font size=6><b><center>Pixie Project Shelter Tracking System</center></b></font>
 				<p><font size=5><?= $pageName ?></font></b>
 				</td>
 				<td style="text-align: right;">

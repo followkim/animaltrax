@@ -128,14 +128,87 @@
 	}	
 
 */	pixie_header("Main", $userName);
-
-	matchesPanelMain($mysqli);
-
 ?>
+<--! form action="" method="POST">
+	<table>
+		<tr>
+			<?=td_labelData("Start", $start, "start")?>
+			<?=td_labelData("End", $end, "end")?>
+			<td><input type="submit" value="Search" /></td>
+		</tr>
+	</table>
+</form>
+<hr>
+<table id="criteria" width="100%">	
+	<tr><td colspan=2>Animal Movement Counts between <?= $start ?> and <?= $end ?></td></tr>
+	<tr>
+		<td width="50%">
+			<table id="tabular" width="100%">
+				<tr>
+					<th>&nbsp;</th>
+					<th>&nbsp;Count&nbsp;</th>
+				</tr>
+					<?php
+						// Get full list of transfers
+						$transferTypesSQL = "select * from TransferType;";
+						$result = $mysqli->query($transferTypesSQL);
+						if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $transferTypesSQL);
+						
+						while($row = $result->fetch_array()) {
+							$transferTypes[] = array (
+								'transferTypeID' 	=> $row['transferTypeID'],
+								'transferName' 		=> $row['transferName']
+							);
+						}
+						
+						foreach ($transferTypes as $transferType) {
+							
+							$cntSQL = "select count(animalID) as cnt from Transfer " .
+								" where transferTypeID = ". $transferType['transferTypeID'] .
+								" AND transferDate BETWEEN '".Date2MySQL($start)."' AND '".Date2MySQL($end)."'";
+
+							$result = $mysqli->query($cntSQL);		
+							if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $cntSQL);				
+							$row = $result->fetch_array();
+							echo trd_labelData($transferType['transferName'], $row['cnt']);
+							
+							$result->close();	
+						}
+						$sql = "select sum(fee) as cnt from Transfer 
+							where transferDate BETWEEN '".Date2MySQL($start)."' AND '".Date2MySQL($end)."'";
+
+						$result = $mysqli->query($sql);
+						if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $person_sql);
+						else {
+							$row = $result->fetch_array();
+							echo trd_labelData("Total Fees Collected", ($row['cnt']!=0?"$".$row['cnt']:"None"));			
+						}
+						$result->close();
+					?>
+			</table>		
+		</td>
+		
+		<td width="50%">
+			<table id="tabular" width="100%">
+				<tr>
+					<th>&nbsp;</th>
+					<th>&nbsp;Count&nbsp;</th>
+				</tr>
+				<?=trd_labelData("Total Shelter Stays", $shelterDays)?>
+				<?=trd_labelData("Average Shelter Stay", sprintf('%d', 	($numShelter>0?($shelterDays/$numShelter):0)))?>
+				<?=trd_labelData("Total Trials", $trialDays)?>
+				<?=trd_labelData("Average Trial Stay", sprintf('%d', 	($numTrials>0?($trialDays/$numTrials):0)))?>
+				<?=trd_labelData("Total Failed Trial Days", $failedTrialDays)?>
+				<?=trd_labelData("Average Failed Trial", sprintf('%d', 	($numFails>0?($failedTrialDays/$numFails):0)))?>
+			</table>
+		</td>
+
+	</tr>
+</table -->
 
 <hr>
 <table id=tabular width="100%">
-	<tr><td colspan="6"><b>Upcoming Vaccinations</b></td></tr>
+	<tr><td colspan="6">Upcoming Vaccinations</td></tr>
 	<tr>
 			<th>Name</th>
 			<th>Vaccine</th>
@@ -176,7 +249,7 @@
 	
 <hr>
 <table id=tabular width="100%">
-	<tr><td colspan=6><b>Upcoming Surgeries</b></td></tr>
+	<tr><td colspan=6>Upcoming Surgeries:</td></tr>
 	<tr>
 	  <th>Date</th>
 	  <th>Type</th>

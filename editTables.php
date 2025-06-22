@@ -119,7 +119,7 @@
 	?>
 	<tr>
 	<?php
-			if (($thisData[0]>0) OR ($thisData[0]!='')) {
+			if ($thisData and ($thisData[0]>0) OR ($thisData[0]!='')) {
 				foreach ($fieldArray as $thisField) {
 					print "<td>&nbsp;".$thisData[$thisField]."</td>";
 				}

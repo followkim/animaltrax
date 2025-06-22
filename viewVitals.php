@@ -21,7 +21,8 @@
 	// Pull in the main includes file
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
-	
+
+	date_default_timezone_set("America/Los_Angeles");
 	// Get the current user, if not logged in redirect to the login page.
 	$userName = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
@@ -36,7 +37,7 @@
 	} else header('Location: ' . "findAnimal.php", true, 302);
 	
 	// Pull possible GET variables
-	$vitalDateTime = isset($_GET['vitalDateTime'])?$_GET['vitalDateTime']:date('m/d/y');
+	$vitalDateTime = isset($_GET['vitalDateTime'])?date('Y-m-d H:i:s', strtotime($_GET['vitalDateTime'])):date('Y-m-d H:i');
 	$vitalSignTypeID = isset($_GET['vitalSignTypeID'])?intval($_GET['vitalSignTypeID']):"";
 	$action = isset($_GET['action'])?validateAction($_GET['action']):"";
 	$retPage = isset($_GET['retPage'])?validateRetpage($_GET['retPage']):"viewVitals";
@@ -66,7 +67,7 @@
 	$isPost = ($_SERVER['REQUEST_METHOD'] == 'POST');
 	$p_vitalSignTypeID = $isPost?$_POST['vitalSignTypeID']:"";
 	$vitalValue = $isPost?$_POST['vitalValue']:"";
-	$p_vitalDateTime = $isPost?Date2MySQL($_POST['vitalDateTime']):"";
+	$p_vitalDateTime = $isPost?DateTime2MySQL($_POST['vitalDate']." ".$_POST['vitalTime']):date('Y-m-d H:i:s');
 	$note = $isPost?$_POST['note']:"";
 	$p_action = $isPost?$_POST['action']:"";
 	
@@ -76,7 +77,7 @@
 		// Do some error checking
 		if ($vitalValue == "") $errString .= "Value is required!<br>";
 		if ($p_vitalDateTime == "") $errString .= "Date is required!<br>";
-		if ($p_vitalDateTime > date('Y-m-d')) $errString .= "<b>Date</b> can't be greater then today.<br>";
+		if ($p_vitalDateTime > date('Y-m-d H:i:s')) $errString .= "<b>Date</b> can't be greater then today.<br>";
 
 		if ($errString == "")  {
 
@@ -93,7 +94,7 @@
 			
 			$mysqli->query($p_action=="edit"?$updateSQL:$insertSQL);
 			if ($mysqli->errno) {
-				if ($mysqli->errno == 1062) $errString .= "You can't add the same vital sign on the same day.<br>";
+				if ($mysqli->errno == 1062) $errString .= "You can't have two vitals sign at the same time.<br>";
 				else errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
 			}
 
@@ -102,7 +103,7 @@
 		
 			// reset... 
 			$action = $note = $nextDose = $medicationName = $vitalSignTypeID = "";
-			$vitalDateTime = date('d/m/y');		
+			$vitalDateTime = date('Y-m-d H:i');		
 		}
 	} 
 
@@ -123,7 +124,7 @@
 			if ($mysqli->errno)   errorPage($mysqli->errno, $mysqli->error, $sql);
 			else {		// should just have one row as we are adding by PK
 				$row = $result->fetch_array();
-				$vitalDateTime = MySQL2Date($row['vitalDateTime']);
+				$vitalDateTime = date("Y-m-d H:i", strtotime($row['vitalDateTime']));
 				$vitalValue = $row['vitalValue'];
 				$note = $row['note'];
 				$result->close();
@@ -145,7 +146,7 @@
 			<td>
 				<table>
 					<tr>
-						<td>Vital Sign Name:</td>
+						<td><b>Vital Sign Name:</b></td>
 						<td>
 							<select name=vitalSignTypeID>                  
 								<?php
@@ -167,13 +168,16 @@
 								<?php
 									}
 									$result->close();
+									echo $vitalSignDateTime;
+									echo "FINDME";
 								?> 
 							</select>
 							<a href="editTables.php?tableName=VitalSignType&retPage=viewVitals&animalID=<?=$animalID?>">Edit List</a>   
 						</td>
 					</tr>
-					<?= trd_labelData("Value", $vitalValue, vitalValue, true) ?>
-					<?= trd_labelData("Date", $vitalDateTime, vitalDateTime, true) ?>
+					<?= trd_labelData("Value", $vitalValue, "vitalValue", true) ?>
+					<?= trd_labelData("Date", $vitalDateTime?date("Y-m-d",  strtotime($vitalDateTime)):date("Y-m-d"), "vitalDate", true, "date") ?>
+					<?= trd_labelData("Time", $vitalDateTime?date("H:i:s",    strtotime($vitalDateTime)):date("H:i:s"), "vitalTime", true, "time") ?>
 					<tr>
 						<td  style="text-align: right;" >Note: </td><td><textarea type="memo" name="note" cols="30"><?= $note ?></textarea></td>
 					</tr>
@@ -189,7 +193,7 @@
 			</td>
 			<td>
 				<table> <!-- first column of demographic information -->
-					<tr><td colspan=2></td>Vital Sign Information Information for</td></tr>
+					<tr><td colspan=2></td><b>Vital Sign Information for:</b></td></tr>
 					<?= trd_labelData("Name", $animalName) ?>
 					<?= trd_labelData("Birthdate", MySQL2Date($estBirthdate)) ?>
 					<?= trd_labelData("Current age", $age) ?>
@@ -226,7 +230,7 @@
 		while ($row=$result->fetch_array()) {
 	?>
 	<tr>
-		<td><?= MySQL2Date($row['vitalDateTime']) ?>&nbsp;</td>
+		<td><?= MySQL2Date($row['vitalDateTime']) ?> <?= MySQL2Time($row['vitalDateTime']) ?>&nbsp;</td>
 		<td><font color="<?php
 			$modifier='';
 			if (($vital['low']+$vital['low'])>0) {

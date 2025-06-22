@@ -144,7 +144,7 @@
 			<td>
 				<table>
 					<tr>
-						<td>Test Sign Name:</td>
+						<td><b>Test Name</b>:</td>
 						<td>
 							<select name=testTypeID>                  
 								<?php
@@ -163,9 +163,9 @@
 							<a href="editTables.php?tableName=TestType&retPage=viewTests&animalID=<?=$animalID?>">Edit List</a>   
 						</td>
 					</tr>
-					<?= trd_labelData("Date", $testDate, testDate, true) ?>
-					<?= trd_labelData("Value", $testResult, testResult, true) ?>
-					<?= trd_labelData("Note", $note, note, false) ?>
+					<?= trd_labelData("Date", $testDate, "testDate", true) ?>
+					<?= trd_labelData("Value", $testResult, "testResult", true) ?>
+					<?= trd_labelData("Note", $note, "note", false) ?>
 					<tr>
 						<td colspan="2"> 
 							<input hidden type="txt" name="action" value="<?= $action ?>"/>
@@ -177,7 +177,7 @@
 			</td>
 			<td>
 				<table> <!-- first column of demographic information -->
-					<tr><td colspan=2></td>Test Sign Information Information for</td></tr>
+					<tr><td colspan=2><b>Test for:</b></td></tr>
 					<?= trd_labelData("Name", $animalName) ?>
 					<?= trd_labelData("Birthdate", MySQL2Date($estBirthdate)) ?>
 					<?= trd_labelData("Current age", $age) ?>
