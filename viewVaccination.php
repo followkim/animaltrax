@@ -170,7 +170,7 @@
 
 	$vaccList = $mysqli->query($vaccListSQL);
 	if (!$vaccList)  errorPage($mysqli->errno, $mysqli->error, $vaccListSQL);
-
+	$vaxDueTable = "";
 	for ($i = 0; $i < $vaccList->num_rows; $i++) {
 		$vaccRows = $vaccList->fetch_array();
 		$vaccListArray[] = array (
@@ -179,6 +179,7 @@
 			'nextDoseDays'		=> $vaccRows['nextDoseDays'],
 			'adminInfo'		=> []
 		);
+		$vaxDueTable .= "vax['".$vaccRows['medicationID']."'] = ".$vaccRows['nextDoseDays'].";";
 	}
 	$vaccList->close();
 	
@@ -214,7 +215,7 @@
 					<tr>
 						<td nowrap>Vaccination Name:</td>
 						<td>
-							<select name=medicationID>                  
+							<select id=medicationID name=medicationID>                  
 								<?php
 									foreach ($vaccListArray as $thisVacc) {
 								?>
@@ -226,10 +227,10 @@
 							<a href="editTables.php?tableName=Medication&retPage=viewVaccination&animalID=<?=$animalID?>">Edit List</a>   
 						</td>
 					</tr>
-					<?= trd_labelData( "Date Given", MySQL2Date($startDate), "startDate", true) ?>
+					<?= trd_labelData( "Date Given", date('Y-m-d', strtotime($startDate)), "startDate", true, "date") ?>
 					<?= trd_labelData( "Lot", $lot, "lot") ?>
-					<?= trd_labelData( "Expiration Date", $expDate, "expDate") ?>
-					<?= trd_labelData( "Next Due", MySQL2Date($nextDose), "nextDose") ?>
+					<?= trd_labelData( "Expiration Date", $expDate, "expDate", 0, "date") ?>
+					<?= trd_labelData( "Next Due", MySQL2Date($nextDose), "nextDose", 0, "date") ?>
 					<tr>
 						<td></td>
 						<td style="text-align: left;" >Or: <input type="txt" size=7 name="nextDoseNumber" value="" ><select name="nextDoseInterval">
@@ -246,7 +247,7 @@
 							<input hidden type="txt" name="action" value="<?= $action ?>"/>
 							<input type="submit" value="<?= ($action=="edit"?"Edit":"Add") ?> Vaccination" /> 
 							<TODOinput type="submit" value="Cancel (not working)" formaction="<?="viewVaccination.php?animalID=$animalID"?>" /> 
-							<a href="viewVaccination.php?animalID=<?= $animalID ?>">Cancel</a>
+							<a href="viewVaccination.php?animalID=<?= $animalID ?>"><?= ($action=="edit"?"Add New":"Cancel") ?></a>
 						</td>
 					</tr>
 
@@ -273,7 +274,7 @@
 ?>
 	<tr >
 		<td colspan="9">
-			<font color="purple"><b><?= $thisVacc['medicationName'] ?></b></font>
+			<font color="purple"><b><a href=viewVaccination.php?animalID=<?= $animalID ?>&medicationID=<?= $thisVacc['medicationID'] ?>"><?= $thisVacc['medicationName'] ?></b></font>
 		</td>
 	</tr>
 	<tr>
@@ -300,8 +301,9 @@
 		<td><font color ="<?= (!$isLast?"gray":($nextDose < date('Y-m-d')?"red":"black")) ?>" ><?= MySQL2Date($nextDose) ?></font>&nbsp;</td>
 		<td  style="white-space: pre-line;"><?= $thisVacc['adminInfo'][$i]['note'] ?>&nbsp;</td>
 		<td>
-			<a href="<?= "viewVaccination.php?animalID=$animalID&medicationID=".$thisVacc['medicationID']."&startDate=".$thisVacc['adminInfo'][$i]['startDate']."&action=edit" ?>">Edit</a>							
-			<a href="<?= "viewVaccination.php?animalID=$animalID&medicationID=".$thisVacc['medicationID']."&startDate=".$thisVacc['adminInfo'][$i]['startDate']."&action=delete" ?>">Delete</a>							
+			<a href="<?= "viewVaccination.php?animalID=$animalID&medicationID=".$thisVacc['medicationID']."&startDate=".$thisVacc['adminInfo'][$i]['startDate']."&action=edit" ?>">Edit</a> \ 
+			<a href="<?= "viewVaccination.php?animalID=$animalID&medicationID=".$thisVacc['medicationID']."&startDate=".$thisVacc['adminInfo'][$i]['startDate']."&action=delete" ?>"
+                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 		</td>
 	</tr>
 			<?php
@@ -312,4 +314,28 @@
 	}
 ?>
 </table>
+<script>
+	var vax = {};
+	<?= $vaxDueTable; ?>
+
+</script>
+
+<script>
+	const m = document.getElementById("medicationID");
+	const dg = document.getElementById("startDate");
+	m.addEventListener("change", (evt) => nextDose(m, dg));
+	dg.addEventListener("change", (evt) => nextDose(m, dg));
+	nextDose(m, dg);
+
+
+	function nextDose(medDD, dateGiven) {
+		const nd = document.getElementById("nextDose");
+		med_id = medDD.value;
+		dueDate = new Date(dateGiven.value);
+		dueDate.setDate(dueDate.getDate() + vax[med_id]);
+		nd.value = dueDate.toISOString().substring(0, 10);
+		console.log(dueDate.toISOString());
+	}
+</script>
+
 <?php pixie_footer(); ?>

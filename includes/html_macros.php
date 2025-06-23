@@ -6,7 +6,7 @@
 	function td_labelData($label, $variable, $controlName = "", $isRequired = 0, $type="txt", $size=15)	{
 		if ($controlName) {
 			echo "<td id=\"leftHand\">".($isRequired?"<b>":"").($label?"$label":"")."".($isRequired?"*</b>":":")."</td>";
-			echo "<td id=\"rightHand\"><input size=\"$size\" type=\"$type\" name=\"$controlName\" value=\"$variable\"/></td>";
+			echo "<td id=\"rightHand\"><input size=\"$size\" type=\"$type\" name=\"$controlName\"  id=\"$controlName\" value=\"$variable\"/></td>";
 		} else {
 			echo "<td id=\"leftHand\"><b>".($label?"$label:":"")."</b></td>";
 			echo "<td id=\"rightHand\">$variable</td>";
@@ -14,7 +14,7 @@
 	}
 	function td_labelChk($label, $controlName, $isChecked=0) {
 			echo "<td id=\"leftHand\">$label</b></td>";
-			echo "<td><input type=\"checkbox\" name=\"$controlName\" value=\"1\" ".($isChecked?"checked":"")."></td>";
+			echo "<td><input type=\"checkbox\" name=\"$controlName\"  id=\"$controlName\"  value=\"1\" ".($isChecked?"checked":"")."></td>";
 	}
 	function trd_labelChk($label, $controlName, $isChecked=0) {
 		
@@ -39,7 +39,7 @@
 		
 ?>	
 		<td id="leftHand"><?=$label?>: </td>
-		<td id="rightHand"><select name=<?=$idName ?>>                  
+		<td id="rightHand"><select name=<?=$idName ?> id=<?=$idName ?>>                  
 				<?php
 				if ($incBlank) echo "<option></option>";
 				while($row = $result->fetch_array()) {
@@ -57,7 +57,7 @@
 ?>	
 		<td style="text-align: right;"><?=$label ?>: </td>
 		<td style="text-align: left;">
-			<select name=<?=$idName ?>>                  
+			<select name=<?=$idName ?> id=<?=$idName ?>>                  
 				<?= ($incBlank?"<option></option>":"") ?>
 				<?php
 					$result = $mysqli->query("SELECT * FROM $tableName");

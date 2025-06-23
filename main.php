@@ -158,12 +158,12 @@
 	?>
 	<tr>
 		<td id="rightHand"><a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?= $row['animalName'] ?></a></td>
-		<td id="centerHand"><?= $row['medicationName'] ?></td>			
+		<td id="centerHand"><a href="viewVaccination.php?animalID=<?= $row['animalID'] ?>&medicationID=<?= $row['medicationID'] ?>"><?= $row['medicationName'] ?></a></td>			
 		<td id="centerHand">&nbsp;<font color ="<?= ($row['nextDose']<date('Y-m-d')?"red":"black") ?>"><b><?= MySQL2Date($row['nextDose']) ?></b></font></td> 
 		<td id="centerHand"><?= MySQL2Date($row['startDate']) ?></td>			
 		<td id="centerHand" style="white-space: pre-line;">&nbsp;<?= $row['note'] ?></td>			
 		<td>
-			<a href="viewVaccination.php?animalID=<?=$row['animalID']?>&medicationID=<?=$row['medicationID']?>&startDate=<?=$row['startDate']?>&action=edit&retPage=main">Edit</a>
+			<a href="viewVaccination.php?animalID=<?=$row['animalID']?>&medicationID=<?=$row['medicationID']?>">Add New</a>
 		</td>
 	</tr>
 	<?php

@@ -280,7 +280,7 @@
 						</td>
 					</tr>
 					<tr><?=td_labelChk("Neutered/Spayed?", "isFixed", $isFixed)?></tr>
-					<tr><?=td_labelData("Birthdate", $estBirthdate, "estBirthdate")?></tr>
+					<tr><?=td_labelData("Birthdate", date("Y-m-d", strtotime($estBirthdate)), "estBirthdate", 0, "date")?></tr>
 					<tr>
 						<td></td>
 						<td style="text-align: left;" >
@@ -360,7 +360,8 @@
 			<td colspan="3"><b>Note: </b><br><textarea type="memo" name="note" cols="30"><?=$note?></textarea></td>
 		</tr>
 		<?php if ($animalID) { ?>
-			<tr><td  style="text-align: right;" colspan=3><font color="red"><a href="editAnimal.php?action=delete&animalID=<?=$animalID?>">Delete Animal</a></font></td></tr>
+			<tr><td  style="text-align: right;" colspan=3><font color="red"><a href="editAnimal.php?action=delete&animalID=<?=$animalID?>"
+                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete Animal</a></font></td></tr>
 		<?php } ?>
 	</table>
 	

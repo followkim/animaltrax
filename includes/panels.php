@@ -18,14 +18,14 @@
 
 			$result = $mysqli->query($transfer_sql);
 			if (!$result) errorPage($mysqli->errno, $mysqli->error, $transfer_sql);
-			
+
 			// We want to pull all the data into an array, so that we can peek forward
 			// to determine how long an animal was at a transfer
 			$numRows = $result->num_rows;
-			
+
 			while($row = $result->fetch_array()) {
 				$transferArray[] = array(
-					'Name' => $row['Name'],			
+					'Name' => $row['Name'],
 					'personID' => $row['personID'],
 					'transferName' => $row['transferName'],
 					'transferDate' => $row['transferDate'],
@@ -50,8 +50,9 @@
 			<td><?= $transferArray[$i]['fee']>0?"$".$transferArray[$i]['fee']:"&nbsp;" ?></td>
 			<td><?= $transferArray[$i]['note'] ?>&nbsp;</td>
 			<td>
-				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=viewAnimal" ?>">Delete</a>
-				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=viewAnimal" ?>">Edit</a>							
+				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=viewAnimal" ?>">Edit</a> / 
+				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=viewAnimal" ?>"
+	                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 			</td>
 		</tr>
 		<?php
@@ -86,7 +87,7 @@ function vitalsPanel ($animalID, $species, $mysqli) {
 		</tr>
 		<?php
 			// Pull all vital information, place in date buckets
-			$sql = "SELECT * FROM VitalSign WHERE animalID='$animalID' ORDER BY vitalDateTime";
+			$sql = "SELECT * FROM VitalSign WHERE animalID='$animalID' ORDER BY VitalSign.vitalDateTime DESC";
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			$lastDate = 0; 
@@ -149,7 +150,8 @@ function filesPanel($id, $who, $mysqli) {
 			<td><?= MySQL2Date($dateUploaded) ?></td>
 			<td>
 				<a href="<?= $fileURL ?>" target="_blank">Download</a>
-				<a href="<?= ($who=='A'?"viewAnimal":"viewPerson")?>.php?<?= ($who=='A'?"animalID":"personID")?>=<?=$id?>&fileID=<?=$fileID?>">Delete</a>
+				<a href="<?= ($who=='A'?"viewAnimal":"viewPerson")?>.php?<?= ($who=='A'?"animalID":"personID")?>=<?=$id?>&fileID=<?=$fileID?>"
+	                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 			</td>
 		</tr>
 		<?php 
@@ -221,7 +223,7 @@ function VaccinationPanel ($animalID, $species, $mysqli)
 			$thisVacc->close();	
 	?>
 	<tr>
-		<td style="text-align: right;"><?= $thisMedicationName ?>&nbsp;</td>
+		<td style="text-align: right;"><a href='viewVaccination.php?animalID=<?= $animalID ?>&medicationID=<?= $thisMedicationID ?>'><?= $thisMedicationName ?>&nbsp;</a></td>
 		<td style="text-align: center;"><?= $numDoses ?>&nbsp;</td>
 		<td style="text-align: left;"><?= substr($vaccDateStr, 0, -2) ?>&nbsp;</td>
 		<td style="text-align: center;">
@@ -285,13 +287,14 @@ function testPanel($animalID, $species, $mysqli) {
 			while ($row=$result->fetch_array()) {
 		?>
 		<tr>
-			<td><?= $row['testName']?></td>
+			<td><a href="viewTests.php?animalID=<?= $animalID ?>&testTypeID=<?= $row['testTypeID'] ?>"><?= $row['testName']?></td>
 			<td><?= MySQL2Date($row['testDate']) ?></td>
 			<td><?= $row['testResult']?>&nbsp;</font></td>
 			<td><?= $row['note'] ?>&nbsp;</td>
 			<td>
-				<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&action=edit" ?>">Edit</a>							
-				<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&retPage=viewAnimal&action=delete" ?>">Delete</a>							
+				<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&action=edit" ?>">Edit</a> / 
+				<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&retPage=viewAnimal&action=delete" ?>"
+	                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 			</td>
 		</tr>
 		<?php
@@ -405,7 +408,7 @@ function matchesPanel($animalID, $mysqli) {
 			<td id=centerHand><?=MySQL2Date($row['applicationDate'])?></td>
 			<td id=rightHand><a href="viewPerson.php?personID=<?=$row['personID']?>"><?=$row['firstName']?> <?=$row['lastName']?></a></td>
 			<td id=rightHand><?=$row['breed']?></td>
-			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$animalID?>">Edit/View</a></td>
+			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$animalID?>">Edit / View</a></td>
 		</tr>
 		<?php
 				}
@@ -440,7 +443,7 @@ function matchesPanelMain($mysqli) {
 			<td id=centerHand><?=MySQL2Date($row['applicationDate'])?></td>
 			<td id=rightHand><a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a></td>
 			<td id=rightHand><a href="viewPerson.php?personID=<?=$row['personID']?>"><?=$row['firstName']?> <?=$row['lastName']?></a></td>
-			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$row['animalID']?>">Edit/View</a></td>
+			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$row['animalID']?>">Edit / View</a></td>
 		</tr>
 		<?php
 				}
@@ -519,7 +522,7 @@ function pixieAnimalsPanel($personID, $mysqli) {
                 <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
                 <td><span><?= $row['speciesName'] ?></span></td>
                 <td><span><?= $row['Status'] ?></span></td>
-                <td><span><?= $row['CurrentPerson'] ?></span></td>
+                <td><span><a href="viewPerson.php?personID=<?= $row['personID'] ?>"> <?= $row['CurrentPerson'] ?></a></span></td>
             </tr>
                 <?php
                         }
@@ -588,8 +591,8 @@ function currentPositionsPanel ($personID, $mysqli) {
 				<td><?=$row['positionName'] ?></td>
 				<td><?= MySQL2Date($row['startDate']) ?>&nbsp;</td>
 				<td><?= $row['note'] ?>&nbsp;</td>
-				<td><a href="viewPerson.php?action=delete&personID=<?=$row['personID']?>&positionTypeID=<?=$row['positionTypeID']?>">Delete</a></td>
-			
+				<td><a href="viewPerson.php?action=delete&personID=<?=$row['personID']?>&positionTypeID=<?=$row['positionTypeID']?>"
+	                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a></td>
 			</tr>
 				<?php
 					}	
@@ -654,12 +657,13 @@ function surgeryPanel($id, $who, $mysqli) {
 				$note = $row['note'];
 		?>
 		<tr>
-			<td><?=$surgeryType?></td>
+			<td><a href="viewSurgery.php?animalID=<?= $animalID ?>&surgeryDate=<?= $surgeryDate ?>&surgeryTypeID= <?= $surgeryTypeID ?>"><?=$surgeryType?></td>
 			<td><?= MySQL2Date($surgeryDate) ?></td>
 			<td><a href="<?=($who=='P'?"viewAnimal.php?animalID=$animalID":"viewPerson.php?personID=$personID")?>"><?= $name ?></a></td>
 			<td>
-				<a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>">Edit</a>
-				<a href="viewSurgery.php?action=delete&<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>">Delete</a>
+				<a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?= $surgeryDate ?>&surgeryTypeID=<?= $surgeryTypeID ?>">Edit</a> / 
+				<a href="viewSurgery.php?action=delete&<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>"
+	                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 			</td>
 		</tr>
 		<?php 

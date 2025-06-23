@@ -144,7 +144,7 @@
 			<td>
 				<table>
 					<tr>
-						<td><b>Test Name</b>:</td>
+						<td id="leftHand"><b>Test Name</b>:</td>
 						<td>
 							<select name=testTypeID>                  
 								<?php
@@ -163,14 +163,14 @@
 							<a href="editTables.php?tableName=TestType&retPage=viewTests&animalID=<?=$animalID?>">Edit List</a>   
 						</td>
 					</tr>
-					<?= trd_labelData("Date", $testDate, "testDate", true) ?>
+					<?= trd_labelData("Date", date('Y-m-d', strtotime($testDate)), "testDate", true, "date") ?>
 					<?= trd_labelData("Value", $testResult, "testResult", true) ?>
 					<?= trd_labelData("Note", $note, "note", false) ?>
 					<tr>
 						<td colspan="2"> 
 							<input hidden type="txt" name="action" value="<?= $action ?>"/>
 							<input type="submit" value="<?= ($action=="edit"?"Edit":"Add") ?> Test" /> 
-							<a href="viewTests.php?animalID=<?= $animalID ?>">Cancel</a>
+							<a href="viewTests.php?animalID=<?= $animalID ?>"><?= ($action=="edit"?"Add New":"Cancel") ?></a>
 						</td>
 					</tr>
 				</table>
@@ -207,13 +207,14 @@
 						while ($row=$result->fetch_array()) {
 					?>
 					<tr>
-						<td><?= $row['testName']?></td>
+						<td><a href="viewTests.php?action=edit&animalID=<?= $animalID ?>&testTypeID=<?= $row['testTypeID'] ?>&testDate=<?= $row['testDate'] ?> "><?= $row['testName']?></td>
 						<td><?= MySQL2Date($row['testDate']) ?></td>
 						<td><?= $row['testResult']?>&nbsp;</font></td>
 						<td  style="white-space: pre-line;"><?= $row['note'] ?>&nbsp;</td>
 						<td>
-							<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&action=edit" ?>">Edit</a>							
-							<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&action=delete" ?>">Delete</a>							
+							<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&action=edit" ?>">Edit</a> \ 
+							<a href="<?= "viewTests.php?animalID=$animalID&testTypeID=".$row['testTypeID']."&testDate=".$row['testDate']."&action=delete" ?>"
+				                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 						</td>
 					</tr>
 					<?php

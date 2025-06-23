@@ -283,14 +283,14 @@
 		<td><?= $transferArray[$i]['fee']!=0?"$".$transferArray[$i]['fee']:"&nbsp;" ?></td>
 		<td style="white-space: pre-line;"><?= substr($transferArray[$i]['note'], 0,300) ?>&nbsp;</td>
 		<td>
-			<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=addTransfer" ?>">Delete</a>
-			<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=addTransfer" ?>">Edit</a>
-		
+			<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=addTransfer" ?>">Edit</a> / 
+			<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=addTransfer" ?>"
+                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 		</td>
 	</tr>
 		<?php
-		}	
+		}
 		?>
-</table>	
+</table>
 
 <?php pixie_footer(); ?>

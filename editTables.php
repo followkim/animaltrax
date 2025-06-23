@@ -56,13 +56,12 @@
 			for ($i = 1; $i < count($fieldArray); $i++) 
 				$sql = $sql . " ".$fieldArray[$i]."='".$_POST[$fieldArray[$i]]."',";
 			$sql = substr($sql, 0, -1) . "  WHERE " . $fieldArray[0] ."=". $_POST[$fieldArray[0]];
-			echo $sql."<br>";
 		} else {
 			$sql = "INSERT INTO $tableName (";
-			for ($i = 1; $i < count($fieldArray); $i++) 
+			for ($i = 0; $i < count($fieldArray); $i++) 
 				$sql = $sql . $fieldArray[$i].",";
 			$sql = substr($sql, 0, -1) . ") VALUES (";
-			for ($i = 1; $i < count($fieldArray); $i++) 
+			for ($i = 0; $i < count($fieldArray); $i++) 
 				$sql = $sql . "'".$_POST[$fieldArray[$i]]."',";
 			$sql = substr($sql, 0, -1) . ");";
 		}	
@@ -72,15 +71,15 @@
 
 	// GET: action=delete
 	if ($action == "delete") {	
-		$sql = "DELETE from $tableName WHERE $fieldArray[0]=$PK";
+		$sql = "DELETE from $tableName WHERE $fieldArray[0]=" . (is_int($PK) ? "$PK" : "'$PK'");
 		$mysqli->query($sql);
 		if ($mysqli->errno)  errorPage($mysqli->errno, $mysqli->error, $sql);
-		$action="";	
-	}  
-	
+		$action="";
+	}
+
 	// GET: action=edit		(Get the current values to update)
 	else if ($action=="edit") {
-		$sql = "select * from $tableName WHERE $fieldArray[0]=$PK";
+		$sql = "select * from $tableName WHERE $fieldArray[0]=" . is_int($PK)?"$PK":"'$PK'";
 		$result = $mysqli->query($sql);
 		if ($mysqli->errno)  errorPage($mysqli->errno, $mysqli->error, $sql);
 
@@ -119,7 +118,7 @@
 	?>
 	<tr>
 	<?php
-			if ($thisData and ($thisData[0]>0) OR ($thisData[0]!='')) {
+			if (!is_null($thisData) and (!is_null($thisData[0]) OR $thisData[0]>0 OR $thisData[0]!='')) {
 				foreach ($fieldArray as $thisField) {
 					print "<td>&nbsp;".$thisData[$thisField]."</td>";
 				}
@@ -143,7 +142,7 @@
 	<input hidden type="txt" name="<?=$fieldArray[0]?>" value="<?=$updateData[$fieldArray[0]]?>" />
 	<table>
 		<?php
-			for ($i = 1; $i < count($fieldArray); $i++) {
+			for ($i = 0; $i < count($fieldArray); $i++) {
 		?>
 			<tr><td style="text-align: right;"><?=$fieldArray[$i]?>: </td><td><input type="txt" name="<?=$fieldArray[$i]?>" value="<?=$updateData[$fieldArray[$i]]?>" /></td></tr>
 		<?php

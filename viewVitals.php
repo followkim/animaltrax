@@ -109,7 +109,7 @@
 
 	// Otherwise, this is a GET request-- prepare to either delete or edit
 	else {	
-		if ($action == "delete") {	
+		if ($action == "delete") {
 			$sql = "delete from VitalSign WHERE animalID=$animalID and vitalSignTypeID=$vitalSignTypeID and vitalDateTime = '$vitalDateTime';";
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
@@ -186,7 +186,7 @@
 							<input hidden type="txt" name="action" value="<?= $action ?>"/>
 							<input type="submit" value="<?= ($action=="edit"?"Edit":"Add") ?> Vital Sign" /> 
 							<TODOinput type="submit" value="Cancel (not working)" formaction="<?="viewVaccination.php?animalID=$animalID"?>" /> 
-							<a href="viewVitals.php?animalID=<?= $animalID ?>">Cancel</a>
+							<a href="viewVitals.php?animalID=<?= $animalID ?>"><?= ($action=="edit"?"Add New":"Cancel") ?></a>
 						</td>
 					</tr>
 				</table>
@@ -213,7 +213,7 @@
 ?>
 	<tr >
 		<td colspan="5">
-			<font color="purple"><b><?= $vital['vitalSignTypeName'] ?></b></font>
+			<font color="purple"><b><a href="viewVitals.php?animalID=<?= $animalID ?>&vitalSignTypeID=<?= $vital['vitalSignTypeID'] ?>"><?= $vital['vitalSignTypeName'] ?></b></font>
 		</td>
 	</tr>
 	<tr>
@@ -246,8 +246,9 @@
 		<td><?= $vital['range'] ?>&nbsp;</td>
 		<td style="white-space: pre-line;"><?= $row['note'] ?>&nbsp;</td>
 		<td>
-			<a href="<?= "viewVitals.php?animalID=$animalID&vitalSignTypeID=".$vital['vitalSignTypeID']."&vitalDateTime=".$row['vitalDateTime']."&action=edit" ?>">Edit</a>							
-			<a href="<?= "viewVitals.php?animalID=$animalID&vitalSignTypeID=".$vital['vitalSignTypeID']."&vitalDateTime=".$row['vitalDateTime']."&action=delete" ?>">Delete</a>							
+			<a href="<?= "viewVitals.php?animalID=$animalID&vitalSignTypeID=".$vital['vitalSignTypeID']."&vitalDateTime=".$row['vitalDateTime']."&action=edit" ?>">Edit</a> / 
+			<a href="<?= "viewVitals.php?animalID=$animalID&vitalSignTypeID=".$vital['vitalSignTypeID']."&vitalDateTime=".$row['vitalDateTime']."&action=delete" ?>"
+				onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
 		</td>
 	</tr>
 	<?php

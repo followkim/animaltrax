@@ -263,7 +263,7 @@
 	?>
 	<tr>
 		<td><?= MySQL2Date($surgeryDate) ?></td>
-		<td><?= $surgeryType ?></td>
+		<td><a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>"><?= $surgeryType ?></a></td>
 		<td>
 			<a href=<?= "\"viewAnimal.php?animalID=".$animalID."\"" ?>>
 			<?= $animalName ?></a>
@@ -274,8 +274,8 @@
 		</td>
 		<td style="white-space: pre-line;"><?= substr($note, 0,300) ?>&nbsp;</td>
 		<td>
-			<a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>">Edit</a>
-			<a href="viewSurgery.php?action=delete&<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>">Delete</a>		
+			<a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>">Edit</a> / 
+			<a href="viewSurgery.php?action=delete&<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>">Delete</a>
 		</td>
 	</tr>
 		<?php

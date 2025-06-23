@@ -153,7 +153,8 @@
 				<input type="submit" value="Submit Changes" />
 				<a href="<?= $retPage ?>">Cancel</a>
 			</td>
-			<td  style="text-align: right;"><?php if ($personID) { ?><a id=delete href="editPerson.php?personID=<?=$personID?>&action=delete">Delete Person</a></font><?php } ?></td>
+			<td  style="text-align: right;"><?php if ($personID) { ?><a id=delete href="editPerson.php?personID=<?=$personID?>&action=delete"
+                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete Person</a></font><?php } ?></td>
 		</tr>
 	</table>
 </form>
