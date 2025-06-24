@@ -1,4 +1,5 @@
 If you would like to try AnimalTrax, you can log in with the following credentials:
+website: animaltrax.el3ktra.net
 username: guest
 password: reporting
 
