@@ -1,9 +1,1 @@
-If you would like to try AnimalTrax, you can log in with the following credentials:
-
-website: http://animaltrax.el3ktra.net
-
-username: guest
-
-password: reporting
-
-AnimalTrax is Freeware.  If you would like assistance to implment AnimalTrax at your organization, please contact followkim@gmail.com.
+AnimalTrax is Freeware.  If you would like assistance to implment AnimalTrax at your organization, please contact followkim@gmail.com for access to the demo.
