@@ -22,7 +22,7 @@
 	include 'includes/panels.php';
 	
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
     // Init the error string
@@ -92,7 +92,7 @@
 			} else $errString .= "Sorry, there was an error uploading your file: $fileName<br>";
 		}
 	}
-	pixie_header("View Animal: $animalName", $userName, $url);
+	pixie_header("View Animal: $animalName", $userName, $url, $isAdmin);
 
  ?>
 <font color=red><?=$errString?></font>		
@@ -122,7 +122,7 @@
 				<?=trd_labelData("Good with ".($species=="Cat"?"other":"")." cats", $cats)?>
 				<?=trd_labelData("Hypoallergetic", $isHypo)?>
 				<?=trd_labelData("Adoption Status", $adoptionStatus)?>
-				<?=trd_labelData("Personality", $personality)?>
+				<?=trd_labelData("Personality", !is_null($personality)?str_replace(",", "<br>", $personality):"")?>
 			</table>
 		</td>
 		<td id="leftHand">

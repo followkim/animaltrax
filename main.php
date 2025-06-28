@@ -19,7 +19,7 @@
 	ini_set('display_errors', true); 
 
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+	[$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	// connect to the database, get information on the current animal
@@ -127,7 +127,7 @@
 		$old['transferDate'] = $new['transferDate'];
 	}	
 
-*/	pixie_header("Main", $userName);
+*/	pixie_header("Main", $userName, "", $isAdmin);
 
 	matchesPanelMain($mysqli);
 
@@ -141,7 +141,7 @@
 			<th>Vaccine</th>
 			<th><b>Due</b></th>
 			<th>Last Dose</th>
-			<th>Note</th>
+			<th>Time Since Last</th>
 			<th>&nbsp;</th>
 	</tr>
 	<tr>
@@ -160,8 +160,8 @@
 		<td id="rightHand"><a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?= $row['animalName'] ?></a></td>
 		<td id="centerHand"><a href="viewVaccination.php?animalID=<?= $row['animalID'] ?>&medicationID=<?= $row['medicationID'] ?>"><?= $row['medicationName'] ?></a></td>			
 		<td id="centerHand">&nbsp;<font color ="<?= ($row['nextDose']<date('Y-m-d')?"red":"black") ?>"><b><?= MySQL2Date($row['nextDose']) ?></b></font></td> 
-		<td id="centerHand"><?= MySQL2Date($row['startDate']) ?></td>			
-		<td id="centerHand" style="white-space: pre-line;">&nbsp;<?= $row['note'] ?></td>			
+		<td id="centerHand"><?= MySQL2Date($row['startDate']) ?></td>
+		<td id="centerHand" style="white-space: pre-line;">&nbsp;<?= prettyAge($row['startDate'], date('Y-m-d'))  ?></td>
 		<td>
 			<a href="viewVaccination.php?animalID=<?=$row['animalID']?>&medicationID=<?=$row['medicationID']?>">Add New</a>
 		</td>

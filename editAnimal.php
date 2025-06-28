@@ -19,7 +19,7 @@
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
 	
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 	
 	// Init the error string
@@ -40,7 +40,7 @@
 	$breed = $isPost?$_POST['breed']:"";
 	$gender = $isPost?$_POST['gender']:"";
 	$markings = $isPost?$_POST['markings']:"";
-	$estBirthdate = $isPost?Date2MySQL($_POST['estBirthdate']):"";
+	$estBirthdate = $isPost?Date2MySQL($_POST['estBirthdate']):date('Y-m-d');
 	$estbirthdateNumber = $isPost?intval($_POST['estbirthdateNumber']):"";
 	$estbirthdateInterval = $isPost?$_POST['estbirthdateInterval']:"";
 	$activityLevel = $isPost?(intval($_POST['activityLevel'])<=10?intval($_POST['activityLevel']):10):0;
@@ -54,7 +54,13 @@
 	$dogs = ($isPost?$_POST['dogs']:'U');
 	$cats = ($isPost?$_POST['cats']:'U');
 	$adoptionStatusID = $isPost?$_POST['adoptionStatusID']:'';
-	$personalityID = $isPost?($_POST['personalityID']):'';
+
+//	$personalityID = $isPost?($_POST['personalityID']):'';
+	if(isset($_POST['personality'])) {
+	    $personalityList=implode(",", $_POST['personality']);
+	}
+        else $personalityList = "";
+
 	$isHypo = (isset($_POST['isHypo'])?1:0);
     
     $heartwormPos = (isset($_POST['heartwormPos'])?1:0);
@@ -93,12 +99,12 @@
 				(animalName, species, breed, markings, gender, 
 				estBirthdate, isFixed, note, activityLevel,
 				microchipNumber, microchipTypeID, dateImplanted, url, 
-				kids, dogs, cats, adoptionStatusID, personalityID, isHypo) 
-				VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, '%s', %s, '%s', %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', %s);",
+				kids, dogs, cats, adoptionStatusID, isHypo) 
+				VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, '%s', %s, '%s', %s, %s, '%s', '%s', '%s', '%s', '%s', %s);",
 				lbt($animalName), lbt($species), lbt($breed), lbt($markings), lbt($gender), 
 				$estBirthdate, 	$isFixed, lbt($note), $activityLevel, 
 				lbt($microchipNumber), $microchipTypeID, $dateImplanted, lbt($url), 
-				$kids, $dogs, $cats, $adoptionStatusID, $personalityID, $isHypo
+				$kids, $dogs, $cats, $adoptionStatusID, $isHypo
 			);
 			$mysqli->query($insertAnimalSQL);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $insertAnimalSQL);
@@ -117,6 +123,12 @@
 				if ($mysqli->errno or !$result) errorPage($mysqli->errno, $mysqli->error, $checkAnimalSQL);
 				$row = $result->fetch_array();
 				if ($row['animalName'] != $animalName) errorPage($mysqli->errno, "Unable to find newly inserted animal ($animalName)", $checkAnimalSQL);
+
+				// set personalities
+				$personalitySQL = "CALL SetPersonality($animalID, '$personalityList')";
+				errorPage(0, "", $personalitySQL);
+				$result = $mysqli->query($personalitySQL);
+				if ($mysqli->errno or !$result) errorPage($mysqli->errno, $mysqli->error, $personalitySQL);
 
 				// New animals aways start at Pixie, can change later
 				$transferDate = ($transferDate!=''?"'$transferDate'":"NULL");
@@ -180,18 +192,24 @@
 				animalName = '%s', species = '%s', breed = '%s', markings = '%s', gender = '%s', 
 				estBirthdate = %s, isFixed = %s, isHypo = %s, 
                 kids = '%s',  dogs = '%s',  cats = '%s',  
-				adoptionStatusID = '%s', activityLevel = %s, personalityID = '%s',
+				adoptionStatusID = '%s', activityLevel = %s, 
 				microchipNumber = '%s',  microchipTypeID = %s, dateImplanted = %s,
 				note = '%s', url = '%s' WHERE animalID = $animalID;",
 				lbt($animalName), lbt($species), lbt($breed), lbt($markings), lbt($gender), 
 				$estBirthdate, $isFixed, $isHypo, $kids, $dogs, $cats, 
-				$adoptionStatusID, $activityLevel, $personalityID, lbt($microchipNumber), $microchipTypeID, 
+				$adoptionStatusID, $activityLevel, lbt($microchipNumber), $microchipTypeID, 
 				$dateImplanted, lbt($note), lbt($url)
 			);
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			else header('Location: ' . "viewAnimal.php?animalID=$animalID", true, 302);
 		}
+
+		// set personalities
+		$personalitySQL = "CALL SetPersonality($animalID, '$personalityList')";
+ 		$result = $mysqli->query($personalitySQL);
+ 		if ($mysqli->errno or !$result) errorPage($mysqli->errno, $mysqli->error, $personalitySQL);
+
 
 		// Was a file uploaded?  If so, upload and overwrite the URL with the uploaded file.
 		if (isset($_FILES["fileToUpload"]["name"])) {
@@ -253,13 +271,20 @@
 			$dogs = $row['dogs'];
 			$cats = $row['cats'];
 			$adoptionStatusID = $row['adoptionStatusID'];
-			$personalityID = $row['personalityID'];
 			$isHypo = $row['isHypo'];
 			$result->close();
 		}
+
+		$personalitySQL = sprintf("SELECT animalID, GROUP_CONCAT(personalityID) as personality FROM AnimalPersonality ap WHERE animalID = $animalID GROUP BY animalID");
+                $result = $mysqli->query($personalitySQL);
+                if (!$result)  errorPage($mysqli->errno, $mysqli->error, $personalitySQL);
+		if ($result->num_rows > 0) {
+	                $row = $result->fetch_array();
+			$personalityList = $row['personality'];
+		}
 	}
 	
-	pixie_header(($animalID==0?"Add":"Edit")." Animal: $animalName", $userName);
+	pixie_header(($animalID==0?"Add":"Edit")." Animal: $animalName", $userName, "", $isAdmin);
  ?>
 <font color="red"><?= $errString ?></font>
 <form action="" method="POST" enctype="multipart/form-data">
@@ -305,7 +330,7 @@
 					</tr>
 					<?=trd_labelData("Breed", $breed, "breed")?>
 					<?=trd_labelData("Markings", $markings, "markings")?>
-                    <?=trd_buildOption("Personality", "Personality", "personalityID", "personality", $personalityID, "retPage=editAnimal&animalID=$animalID", $mysqli, true)?>
+					<?=trd_buildCheckboxSQL("Personality", "Personality", "personalityID", "personality", $personalityList, "retPage=editAnimal&animalID=$animalID", $mysqli)?>
                 </table>
 			</td>
 			<td>	<!-- Column 2 -->
@@ -371,12 +396,12 @@
 	<hr>
     <table border =1>
         <tr>
-            <td  class="intake_pixie"><center><b>Transferred to Pixie</b></center>
+            <td  class="intake_pixie"><center><b>Transferred to Shelter</b></center>
                 <table  id=criteria> 
                     <?=trd_labelData("Arrival", date('m/d/y'), "transferDate")?>
                     <?=trd_buildOption("Location", "TransferType", "transferTypeID", "transferName", "", "retPage=findAnimal", $mysqli) ?>
                     <?=trd_labelData("Intake Fee", 0, "fee")?>
-                    <tr><td></td><td><i>Use a negative number if Pixie paid this fee.</i></td></tr>
+                    <tr><td></td><td><i>Use a negative number if the shelter paid this fee.</i></td></tr>
                     <tr>
                         <td style="text-align: right;"><b>Notes: </b></td>
                         <td style="text-align: left;"><b><textarea type="memo" name="transferNote" cols="30"></textarea></td>
@@ -388,31 +413,31 @@
             </td>
             <td class="intake_dogs"><center><b>Dogs</b></center>
                 <table id=criteria>
-                    <?=trd_labelData("DHPP (1st)", '', "dhpp1")?>
-                    <?=trd_labelData("DHPP (2nd)", '', "dhpp2")?>
-                    <?=trd_labelData("DHPP (3rd)", '', "dhpp3")?>
-                    <?=trd_labelData("Bordatella", '', "bordatella")?>
-                    <?=trd_labelData("Heartworm: Date", '', "heartworm")?>
+                    <?=trd_labelData("DHPP (1st)", '', "dhpp1", 0, "date")?>
+                    <?=trd_labelData("DHPP (2nd)", '', "dhpp2", 0, "date")?>
+                    <?=trd_labelData("DHPP (3rd)", '', "dhpp3", 0, "date")?>
+                    <?=trd_labelData("Bordatella", '', "bordatella", 0, "date")?>
+                    <?=trd_labelData("Heartworm: Date", '', "heartworm", 0, "date")?>
 					<?=trd_labelChk("Heartworm: positive?", "", 0)?>
                 </table>
             </td>
             <td  class="intake_cats"><center><b>Cats</b></center>
                 <table id=criteria>
-                    <?=trd_labelData("FVRCP (1st)", '', "fvrcp1")?>
-                    <?=trd_labelData("FVRCP (2nd)", '', "fvrcp2")?>
-                    <?=trd_labelData("FVRCP (3rd)", '', "fvrcp3")?>
-                    <?=trd_labelData("FELV/FIV: Date", '', "felvfiv")?>
+                    <?=trd_labelData("FVRCP (1st)", '', "fvrcp1", 0, "date")?>
+                    <?=trd_labelData("FVRCP (2nd)", '', "fvrcp2", 0, "date")?>
+                    <?=trd_labelData("FVRCP (3rd)", '', "fvrcp3", 0, "date")?>
+                    <?=trd_labelData("FELV/FIV: Date", '', "felvfiv", 0, "date")?>
 					<?=trd_labelChk("FELV: positive?", "felv", 0)?>
 					<?=trd_labelChk("FIV: positive?", "fiv", 0)?>
                 </table>
             </td>
             <td><center><b>Both</b></center>
                 <table id=criteria>
-                    <?=trd_labelData("Rabies", '', "rabies")?>
-                    <?=trd_labelData("Pyrantel (1st)", '', "pyrantel1")?>
-                    <?=trd_labelData("Pyrantel (2nd)", '', "pyrantel2")?>
-                    <?=trd_labelData("Flea Treatment", '', "flea")?>
-                    <?=trd_labelData("Initial Weight: Date", date('m/d/y'), "weightDate")?>
+                    <?=trd_labelData("Rabies", '', "rabies", 0, "date")?>
+                    <?=trd_labelData("Pyrantel (1st)", '', "pyrantel1", 0, "date")?>
+                    <?=trd_labelData("Pyrantel (2nd)", '', "pyrantel2", 0, "date")?>
+                    <?=trd_labelData("Flea Treatment", '', "flea", 0, "date")?>
+                    <?=trd_labelData("Initial Weight: Date", date('m/d/y'), "weightDate", 0, "date")?>
                     <?=trd_labelData("Initial Weight: Value", '', "weightValue")?>
                 </table>
             </td>

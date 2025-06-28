@@ -19,7 +19,7 @@
 	include 'includes/panels.php';
 	
 	// Check if the user is logged in
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	// Init the error string
@@ -140,7 +140,7 @@
 			$result->close();
 		}
 	}
-	pixie_header("Add Surgery/Placement: $animalName", $userName);
+	pixie_header("Add Surgery/Placement: $animalName", $userName, $isAdmin);
 
 ?>
 <font color="red"><?= $errString ?></font>

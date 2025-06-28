@@ -31,6 +31,9 @@
 	function trd_buildOptionSQL($label, $tableName, $idName, $labelName, $thisID, $where, $mysqli, $incBlank=0) {		
 		echo "<tr>".td_buildOptionSQL($label, $tableName, $idName, $labelName, $thisID, $where, $mysqli, $incBlank)."</tr>";
 	}
+	function trd_buildCheckboxSQL($label, $tableName, $idName, $labelName, $thisID, $where, $mysqli) {		
+		echo "<tr>".td_buildCheckboxSQL($label, $tableName, $idName, $labelName, $thisID, $where, $mysqli)."</tr>";
+	}
 	function td_buildOptionSQL($label, $tableName, $idName, $labelName, $thisID, $where, $mysqli, $incBlank=0) {
 		
 		$sql = "SELECT $idName, $labelName FROM $tableName $where;";
@@ -50,6 +53,27 @@
 					$result->close();	
 				?> 
 			</select>   
+		</td>
+<?php
+	}	
+
+	function td_buildCheckboxSQL($label, $tableName, $idName, $labelName, $thisID, $retString, $mysqli) {
+		$sql = "SELECT $idName, $labelName FROM $tableName;";
+		$result = $mysqli->query($sql);
+		if (!$result)  errorPage($mysqli->errno, $mysqli->error);
+?>
+		<td id="leftHand"><?=$label?>: </td>
+		<td id="rightHand"><table>
+				<?php
+				while($row = $result->fetch_array()) {
+				?>
+					<tr><td><input type='checkbox' name='personality[]' value='<?= $row[$idName] ?>' <?= !is_null($thisID) && str_contains($thisID, $row[$idName])?"checked":"" ?> > <?= $row[$labelName] ?></td></tr>
+				<?php
+				}
+				$result->close();	
+				?> 
+			</table>   
+			<a href=<?="editTables.php?tableName=$tableName&$retString" ?>>Edit List</a>   
 		</td>
 <?php
 	}	
@@ -76,7 +100,7 @@
 		</td>
 <?php
 	}
-	function pixie_header($pageName, $userName = "", $url="") {
+	function pixie_header($pageName, $userName = "", $url="", $isAdmin=0) {
 	date_default_timezone_set('America/Los_Angeles');
 ?>
 <!DOCTYPE html>
@@ -94,11 +118,11 @@
 		<table>
 			<tr>
 				<!-- Pixie Icon -->
-				<td ><center><a href="main.php"><img width=100 src="./img/PixieLogo.png"><center></a></td>
+				<td ><center><img width=100 src="./img/AnimalTraxLogo.png"><center></td>
 
 				<!-- Banner title -->
 				<td style="vertical-align: bottom;">
-				<font size=6><b><center>Pixie Project Shelter Tracking System</center></b></font>
+				<font size=6><b><center>AnimalTrax Shelter Tracking System</center></b></font>
 				<p><font size=5><?= $pageName ?></font></b>
 				</td>
 				<td style="text-align: right;">
@@ -118,7 +142,7 @@
 								<li><a href="editAnimal.php">Add Animal</a></li>	
 								<li><a href="findPerson.php">Find Person</a></li>	
 								<li><a href="editPerson.php">Add Person</a></li>	
-								<li><a href="editUsers.php">Edit Users</a></li>	
+								<?= $isAdmin?'<li><a href="editUsers.php">Edit Users</a></li>':'' ?>	
 								<li><a href="viewApplications.php">Applications</a></li>	
 							</ul>
 						</nav>

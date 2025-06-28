@@ -6,7 +6,7 @@
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
 	
-	$userName = getLoggedinUser();
+	[$userName,$isAdmin] = getLoggedinUser();
 	if ($userName != "") header("location:main.php");
 		
 	$error = isset($_GET['error'])?$_GET['error']:"";
@@ -29,18 +29,22 @@
 
 		// Mysql_num_row is counting table row
 		$count=$result->num_rows;
-		$result->close();
 		
 		// If result matched $myusername and $mypassword, table row must be 1 row
 		if($count==1){
+			$row = $result->fetch_array();
 			$cookie_name = "pixie";
-			$cookie_value = "$myusername";
+			$cookie_value = $row['username'].",".$row['isAdmin'];
+//			$cookie_value = $myusername.",". "1";
 			setcookie($cookie_name, $cookie_value, time() + 1200, "/");
 			// 86400 = 1 day
-
+			$result->close();
 			header("location:main.php");
 		}
-		else header("location:login.php?error=1");
+		else {
+			$result->close();
+			header("location:login.php?error=1");
+		}
 	}
 
 	pixie_header("Login");

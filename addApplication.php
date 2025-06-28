@@ -18,7 +18,7 @@
 	ini_set('display_errors', true); 
 	
 	// Check that we have a valid logged in user
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 	
 	// Init the error string
@@ -52,7 +52,7 @@
 	$species = $isPost?$_POST['species']:"";
 	$gender = $isPost?$_POST['gender']:"";
 	$breed = $isPost?$_POST['breed']:"";
-	$personalityID = $isPost?intval($_POST['personalityID']):"";
+	$personalityID = $isPost?$_POST['personalityID']:"";
 	$minAge = $isPost?intval($_POST['minAge']):0;
 	$maxAge = $isPost?intval($_POST['maxAge']):99;
 	$minWeight = $isPost?intval($_POST['minWeight']):0;
@@ -152,6 +152,7 @@
             $applicationDate = $row['applicationDate'];
             $personID = $row['personID'];
             $species = $row['species'];
+            $gender = $row['gender'];
             $minAge = $row['minAge'];
             $maxAge = $row['maxAge'];
             $minWeight = $row['minWeight'];
@@ -196,7 +197,7 @@
 			$result->close();
 		}
 	}
-	pixie_header(($applicationID==0?"Add":"Edit")." Application for ".$personName, $userName);
+	pixie_header(($applicationID==0?"Add":"Edit")." Application for ".$personName, $userName, "", $isAdmin);
 ?>
 
 <font color="red"><?= $errString ?></font>

@@ -127,7 +127,7 @@
 		$old['transferDate'] = $new['transferDate'];
 	}	
 
-*/	pixie_header("Main", $userName);
+*/	pixie_header("Main", $userName, "", $isAdmin);
 ?>
 <--! form action="" method="POST">
 	<table>

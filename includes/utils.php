@@ -60,10 +60,9 @@
 			return "";
 		}
 		
-		$userName = $_COOKIE[$cookie_name];
-		setcookie($cookie_name, $userName, time() + 1200, "/");
-		
-		return $userName;
+		list($userName,$isAdmin) = explode(",", $_COOKIE[$cookie_name]);
+		setcookie($cookie_name, $userName.",".$isAdmin, time() + 1200, "/");
+		return [$userName,$isAdmin];
 	}
 
 	// Connect to the localhost database
@@ -112,7 +111,7 @@
 	// Returns a "pretty" age.  Check the animal ages in the DB to see how this works.
 	// Basically it will show the number of years, months, days that a animal is,
 	// dropping off less specific strings as the age goes up. 
-	function prettyAge($date1, $date2, $showAll = false)
+	function  prettyAge($date1, $date2, $showAll = false)
 	{
 		$retStr = "";
 		if ($date1 and $date2 and ($date1 != '0000-00-00')) {

@@ -9,7 +9,7 @@ var $cats = $(".intake_cats");
 var $species_dd = $("[name='species']");
 
 // Hide both at start 
-$dogs.hide();
+$dogs.show();     // Dog is the first in the list, and the more common animal
 $cats.hide();
 
 // Attach an event handler when the Dropdown is changed

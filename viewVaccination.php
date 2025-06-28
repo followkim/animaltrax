@@ -27,7 +27,7 @@
 	ini_set('display_errors', 1);
 	
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 	
 	$errString = "";
@@ -201,7 +201,7 @@
 		$vaccList->close();
 	}
 		
-	pixie_header("View Vaccinations: $animalName", $userName);
+	pixie_header("View Vaccinations: $animalName", $userName, "", $isAdmin);
 
 ?>
 <font color=red><?=$errString?></font>

@@ -10,7 +10,7 @@
 	include 'includes/html_macros.php';
 	include 'includes/panels.php';
 	
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 	
 	$personID = (isset($_GET['personID'])?intval($_GET['personID']):0);
@@ -111,7 +111,7 @@
 	$result->close();
 	
 	
-	pixie_header("View Person: ".($isOrg?"":$firstName." ")."$lastName", $userName);
+	pixie_header("View Person: ".($isOrg?"":$firstName." ")."$lastName", $userName, "", $isAdmin);
  ?>
 	<table id="criteria">    
 		<tr>

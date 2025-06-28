@@ -24,7 +24,8 @@
 
 	date_default_timezone_set("America/Los_Angeles");
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	// Init the error string
@@ -83,16 +84,24 @@
 
 			$qVitalVal=lbt($vitalValue);
 			$qNote=lbt($note);
-			
-			$nextDose = ($nextDose!=''?"'$nextDose'":"NULL");
+
+			$nextDose = (!is_null($nextDose)?"'$nextDose'":"NULL");
 			$insertSQL = "insert into VitalSign VALUES 
 				('$p_vitalDateTime', '$qVitalVal', '$qNote', $p_vitalSignTypeID, $animalID);";
 			$updateSQL = "update VitalSign set 
 						vitalDateTime='$p_vitalDateTime', vitalValue = '$qVitalVal', 
 						note='$qNote',  vitalSignTypeID=$p_vitalSignTypeID 
 						WHERE vitalSignTypeID=$vitalSignTypeID and animalID=$animalID and vitalDateTime='$vitalDateTime';";
-			
-			$mysqli->query($p_action=="edit"?$updateSQL:$insertSQL);
+
+			$sql = "CALL VitalUpsert($animalID, $p_vitalSignTypeID, '$p_vitalDateTime', $qVitalVal, '$qNote');";
+
+			try {
+//				$mysqli->query($p_action=="edit"?$updateSQL:$insertSQL);
+				$mysqli->query($sql);
+			} catch(Exception $e) {
+				$errString .= $e;
+				echo "<script>console.log('ERROR: " . $e."')</script>";
+			}
 			if ($mysqli->errno) {
 				if ($mysqli->errno == 1062) $errString .= "You can't have two vitals sign at the same time.<br>";
 				else errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
@@ -100,15 +109,15 @@
 
 			// If a return page was given, navigate back to it after the update/delete.
 			if ($retPage) header("location:$retPage.php?animalID=$animalID");
-		
+
 			// reset... 
 			$action = $note = $nextDose = $medicationName = $vitalSignTypeID = "";
-			$vitalDateTime = date('Y-m-d H:i');		
+			$vitalDateTime = date('Y-m-d H:i');
 		}
-	} 
+	}
 
 	// Otherwise, this is a GET request-- prepare to either delete or edit
-	else {	
+	else {
 		if ($action == "delete") {
 			$sql = "delete from VitalSign WHERE animalID=$animalID and vitalSignTypeID=$vitalSignTypeID and vitalDateTime = '$vitalDateTime';";
 			$result = $mysqli->query($sql);
@@ -133,7 +142,7 @@
 	}
 	$vitalList = array();
 	
-	pixie_header("View Vitals: $animalName", $userName);
+	pixie_header("View Vitals: $animalName", $userName, "", $isAdmin);
 
 ?>
 
@@ -168,8 +177,6 @@
 								<?php
 									}
 									$result->close();
-									echo $vitalSignDateTime;
-									echo "FINDME";
 								?> 
 							</select>
 							<a href="editTables.php?tableName=VitalSignType&retPage=viewVitals&animalID=<?=$animalID?>">Edit List</a>   

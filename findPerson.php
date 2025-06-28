@@ -22,7 +22,7 @@
 	include 'includes/html_macros.php';
 
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	// is this a POST if so, grab the POST varibales.
@@ -44,7 +44,7 @@
 	}
 	$mysqli = DBConnect();
 
-	pixie_header("Find Person", $userName);
+	pixie_header("Find Person", $userName, "", $isAdmin);
 
 ?>
 <table id=criteria width="100%">

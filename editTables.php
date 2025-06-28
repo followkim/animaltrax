@@ -8,7 +8,7 @@
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
 	
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	// Pull the possible GET strings
@@ -35,7 +35,7 @@
 	$dataArray = array();
 
 	// Get the column names
-	$selectSQL = "select * from $tableName;";				
+	$selectSQL = "select * from " . $tableName . ";";
 	$result = $mysqli->query($selectSQL);
 	if (!$result)  errorPage($mysqli->errno, $mysqli->error, $selectSQL);
 	
@@ -55,7 +55,7 @@
 			$sql = "update $tableName SET ";
 			for ($i = 1; $i < count($fieldArray); $i++) 
 				$sql = $sql . " ".$fieldArray[$i]."='".$_POST[$fieldArray[$i]]."',";
-			$sql = substr($sql, 0, -1) . "  WHERE " . $fieldArray[0] ."=". $_POST[$fieldArray[0]];
+			$sql = substr($sql, 0, -1) . "  WHERE " . $fieldArray[0] ."=". (is_int($_POST[$fieldArray[0]]) ? $_POST[$fieldArray[0]] : "'".$_POST[$fieldArray[0]]."'");
 		} else {
 			$sql = "INSERT INTO $tableName (";
 			for ($i = 0; $i < count($fieldArray); $i++) 
@@ -79,7 +79,7 @@
 
 	// GET: action=edit		(Get the current values to update)
 	else if ($action=="edit") {
-		$sql = "select * from $tableName WHERE $fieldArray[0]=" . is_int($PK)?"$PK":"'$PK'";
+		$sql = "select * from $tableName WHERE $fieldArray[0]=" . (is_int($PK)?"$PK":"'$PK'");
 		$result = $mysqli->query($sql);
 		if ($mysqli->errno)  errorPage($mysqli->errno, $mysqli->error, $sql);
 
@@ -100,7 +100,7 @@
 	$result->close();
 
 
-	pixie_header("Edit Tables".($tableName?": ".$tableName:""), $userName);
+	pixie_header("Edit Tables".($tableName?": ".$tableName:""), $userName, "", $isAdmin);
 
  ?>
 <table  border="1" cellspacing="0" cellpadding="0" width="100%">
@@ -124,8 +124,13 @@
 				}
 	?>
 				<td>
-					<a href="editTables.php?tableName=<?=$tableName?>&PK=<?=$thisData[$fieldArray[0]]?>&action=edit&<?=$retString?>">Edit</a>
-					<a href="editTables.php?tableName=<?=$tableName?>&PK=<?=$thisData[$fieldArray[0]]?>&action=delete&<?=$retString?>">Delete</a>
+	<?php
+					if ($isAdmin == "1") {
+
+						print "<a href='editTables.php?tableName="."$tableName&PK=".$thisData[$fieldArray[0]]."&action=edit&".$retString."'>Edit</a> / ";
+						print "<a href='editTables.php?tableName="."$tableName&PK=".$thisData[$fieldArray[0]]."&action=delete&".$retString."'>Delete</a>";
+					}
+	?>
 				</td>
 			</tr>
 	<?php
@@ -137,7 +142,7 @@
 <hr>
 
 
-<?= ($action=="edit"?"Edit":"Add") ?> Row:
+<b><?= ($action=="edit"?"Edit":"Add") ?> Row:</b>
  <form action="" method="POST">
 	<input hidden type="txt" name="<?=$fieldArray[0]?>" value="<?=$updateData[$fieldArray[0]]?>" />
 	<table>
@@ -153,7 +158,7 @@
 	<input type="submit" value="<?= ($action=="edit"?"Update":"Add") ?> Row" /> 
 	<TODOinput type="submit" value="Cancel (not working)" formaction="<?="viewVaccination.php?animalID=$animalID"?>" /> 
 	<a href="<?=$retPage?>.php?animalID=<?= $animalID ?>">Cancel</a>
-	<?php if ($action) { ?><a href="editTables.php?tableName=<?=$tableName?>&retPage=<?=$retPage?>&animalID=<?= $animalID ?>">Add Row</a> <?php } ?>
+	<?php if ($action) { ?><a href="editTables.php?tableName=<?=$tableName?>&retPage=<?=$retPage?>&animalID=<?= $animalID ?>">Clear</a> <?php } ?>
 
 </form>
 <br><?php if ($retPage) { ?><a href="<?=$retPage?>.php?&<?= $retString ?>">Return to <?=$retPage ?></a> <?php } ?>

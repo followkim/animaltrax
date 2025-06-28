@@ -18,7 +18,7 @@
 	include 'includes/html_macros.php';
 
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	$mysqli = DBConnect();
@@ -42,13 +42,13 @@
     }
 
 
-	pixie_header("View Applications", $userName);
+	pixie_header("View Applications", $userName, "", $isAdmin);
 
 ?>
 
 <form action="" method="POST">
 	<table id=criteria>
-		<?=trd_labelData("Name", $name, "name")?>
+		<?=trd_labelData("Name of applicant", $name, "name")?>
 		<tr>
 			<td style="text-align: right;">Species: </td>
 			<td style="text-align: left;">

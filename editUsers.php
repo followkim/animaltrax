@@ -7,8 +7,9 @@
 	include 'includes/html_macros.php';
 
 	// Get the current user, if not logged in redirect to the login page.
-	$loggedIn_User = getLoggedinUser();
+        [$loggedIn_User,$isAdmin] = getLoggedinUser();
 	if ($loggedIn_User == "") header("location:login.php");
+	if (!$isAdmin) header("location:main.php");
 
 	$userID = (isset($_GET['userID'])?intval($_GET['userID']):'');
 	$action = (isset($_GET['action'])?validateAction($_GET['action']):'');
@@ -95,7 +96,7 @@
 			$userID=0;
 		}
 	}
-	pixie_header("View Users", $loggedIn_User);
+	pixie_header("View Users", $loggedIn_User, "", $isAdmin);
 
 ?>
 <table id="criteria">

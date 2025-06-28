@@ -19,7 +19,7 @@
 	include 'includes/panels.php';
 	
 	// Check if the user is logged in
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 
 	// Init the error string
@@ -117,7 +117,7 @@
 		}
 	} else $thisPerson['isOrg'] = false;
 
-	pixie_header("Add Transfer/Placement: $animalName", $userName);
+	pixie_header("Add Transfer/Placement: $animalName", $userName, "", $isAdmin);
 
 ?>
 <font color="red"><?= $errString ?></font>

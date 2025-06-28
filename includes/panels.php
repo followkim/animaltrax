@@ -198,15 +198,14 @@ function VaccinationPanel ($animalID, $species, $mysqli)
 			);
 		}
 		$vaccList->close();
-								
+
 		foreach ($localVaccList as $currentMedication) {
 			$thisMedicationID = $currentMedication['medicationID'];
 			$thisMedicationName = $currentMedication['medicationName'];
 			
 			$thisVaccSQL = "SELECT * FROM Prescription p 
 							WHERE animalID = $animalID and medicationID = $thisMedicationID 
-							ORDER by startdate;";
-		
+							ORDER by startdate DESC;";
 			$thisVacc = $mysqli->query($thisVaccSQL);		
 			if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $thisVaccSQL);
 			
@@ -214,11 +213,13 @@ function VaccinationPanel ($animalID, $species, $mysqli)
 			$vaccDateStr = '';
 			$numDoses = 0;
 			$nextDose = '';
-			
+
 			while($vaccRow = $thisVacc->fetch_array()) {
 				$numDoses++;
 				$nextDose = ($vaccRow['nextDose']?MySQL2Date($vaccRow['nextDose']):"");
-				$vaccDateStr = $vaccDateStr . MySQL2Date($vaccRow['startDate']) . ", ";
+				if ($numDoses<6) {
+					$vaccDateStr = $vaccDateStr . MySQL2Date($vaccRow['startDate']) . ", ";
+				}
 			}
 			$thisVacc->close();	
 	?>

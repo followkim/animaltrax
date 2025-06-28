@@ -22,9 +22,9 @@
 	include 'includes/html_macros.php';
 	
 	// Get the current user, if not logged in redirect to the login page.
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
-	else pixie_header("Find Animal", $userName);
+	else pixie_header("Find Animal", $userName, "", $isAdmin);
 
 	// is this a POST if so, grab the POST varibales.
 	$isPost = ($_SERVER['REQUEST_METHOD'] == 'POST');

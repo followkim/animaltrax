@@ -7,7 +7,7 @@
 	include 'includes/html_macros.php';
 	
 	// Check that the user is logged in, if not redirect back to login page
-	$userName = getLoggedinUser();
+        [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 	
 	$errString = "";
@@ -115,7 +115,7 @@
 			}
 		}
 	}
-	pixie_header(($personID==0?"Add":"Edit")." Person: ".($isOrg?"":$firstName." ")."$lastName", $userName);
+	pixie_header(($personID==0?"Add":"Edit")." Person: ".($isOrg?"":$firstName." ")."$lastName", $userName, "", $isAdmin);
 
  ?> 
 <font color="red"><?= $errString ?></font>
