@@ -12,6 +12,7 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
+        date_default_timezone_set('America/Los_Angeles');
 	
 	// Pull in includes
 	include 'includes/utils.php';
@@ -281,7 +282,7 @@
 		<td><?= $transferArray[$i]['transferName'] ?></td>
 		<td><?= $nextTransfer?prettyAge($transferArray[$i]['transferDate'], $nextTransfer ,false):"" ?></td>
 		<td><?= $transferArray[$i]['fee']!=0?"$".$transferArray[$i]['fee']:"&nbsp;" ?></td>
-		<td style="white-space: pre-line;"><?= substr($transferArray[$i]['note'], 0,300) ?>&nbsp;</td>
+		<td style="max-width: 200px;white-space:wrap;"><?= substr($transferArray[$i]['note'], 0,300) ?>&nbsp;</td>
 		<td>
 			<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=addTransfer" ?>">Edit</a> / 
 			<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=addTransfer" ?>"

@@ -16,6 +16,7 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
+        date_default_timezone_set('America/Los_Angeles');
 
 	// Pull in the main includes file
 	include 'includes/utils.php';

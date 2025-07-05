@@ -16,6 +16,7 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
+        date_default_timezone_set('America/Los_Angeles');
 		
 	// Pull in the main includes file
 	include 'includes/utils.php';
@@ -39,8 +40,8 @@
 	$end = ($isPost?$_POST['end']:''); //date('m/d/y',strtotime('last day of last month')));
 	$adoptionStatusID = ($isPost?$_POST['adoptionStatusID']:"");
 
-	if ($start and !$end) $end = date('m/d/Y');
-	if (!$start and $end) $start = date('1/1/2001');
+	if ($start and !$end) $end = date('Y-m-d');
+	if (!$start and $end) $start = date('2001-01-01');
 	if (strtotime($start) > strtotime($end)) {
 		$temp=$end;
 		$end=$start;
@@ -67,20 +68,20 @@
 				  <option value="O" <?= ($species=='O'?"selected":"") ?>>Other</option>
 				</select> 		
 			</td>
-			<?=td_buildOption("Status", "TransferType", "transferTypeID", "transferName", $transferTypeID, "retPage=findAnimal", $mysqli, true) ?>
+			<?=td_buildOption("Location", "TransferType", "transferTypeID", "transferName", $transferTypeID, "retPage=findAnimal", $mysqli, true) ?>
 		</tr>
 		<tr>
 			<td style="text-align: right;">Gender: </td>
 			<td style="text-align: left;">
-				<select name=gender>W
+				<select name=gender>
 				  <option value=""></option>
 				  <option value="F" <?= ($gender=='F'?"selected":"") ?>>Female</option>
 				  <option value="M" <?= ($gender=='M'?"selected":"") ?>>Male</option>
 				  <option value="O" <?= ($gender=='O'?"selected":"") ?>>Other/Unknown</option>
 				</select> 		
 			</td>
-			<td style="text-align: right;">Status between:</td>
-			<td><input size=8 name="start" value="<?=$start?>" type="txt"> and <input size=8 name="end" value="<?=$end?>" type="txt"></td>
+			<td style="text-align: right;">Transfered between:</td>
+			<td><input size=8 name="start" value="<?=$start?>" type="date"> and <input size=8 name="end" value="<?=$end?>" type="date"></td>
 		</tr>
 		<tr>
 			<td></td>
@@ -92,7 +93,7 @@
 		</tr>
 		<tr><td align="right">
 				<input type="submit" value="Search"/>
-				<input type="submit" value="Clear" action="findAnimal.php" method="GET"/> <! TODO-- need to implement -->
+				<a href="findAnimal.php">Clear</a> <! TODO-- need to implement -->
 			</td>
 		</tr>
 	</table>
@@ -108,6 +109,9 @@
 <table id="sortable">
     <thead>
         <tr>
+<?php
+	if (isset($_GET['personID'])) echo "<th><span>&nbsp;</span></th>";
+?>
             <th><span>Name</span></th>
             <th><span>Species</span></th>
             <th><span>Age</span></th>
@@ -135,11 +139,10 @@
 			if ($start) $findSQL .= "(transferDate BETWEEN '".Date2MySQL($start)."' AND '".Date2MySQL($end)."') AND ";
 			if ($adoptionStatusID) $findSQL .= "(adoptionStatusID = '$adoptionStatusID') AND ";
 		$findSQL .= "(animalID>0) ORDER BY transferDate;";
-	} else $findSQL = "CALL FindAnimal('$name', '$microchipNumber', '$species', '$gender', '$transferTypeID', '$adoptionStatusID', '$onlyAdoptable', '$notFixed', '".Date2MySQL($start)."', '".Date2MySQL($end)."')";
-
+	} else $findSQL = "CALL FindAnimal('$name', '$microchipNumber', '$species', '$gender', '$transferTypeID', '$adoptionStatusID', '$onlyAdoptable', ".($notFixed?1:0).", '$start', '$end')";
 	$result = $mysqli->query($findSQL);
 	if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $findSQL);
-	if ($start) echo "Activity between $start and $end.";
+	if ($start) echo "Activity between ".MySQL2Date($start)." and ".MySQL2Date($end).".";
 
 	// Generate the table.  The Animal name is a  link to the viewAnimal page
 	// with the animalID passed in the URL.  The Person is also a link 
@@ -147,6 +150,11 @@
 	while($row = $result->fetch_array()) {
 ?>
         <tr>
+<?php
+        if (isset($_GET['personID'])) {
+		echo"<td><a href=\"editAppointment.php?personID=".$_GET['personID'].(isset($_GET['apptDateTime'])?"&apptDateTime=".$_GET['apptDateTime']:"")."&animalID=".$row['animalID']."\">Select</a></td>";
+	}
+?>
             <td><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
             <td><span><?= $row['speciesName'] ?></td>
             <td><span><?= prettyAge( $row['estBirthdate'], date("Y-m-d")) ?></span></td>

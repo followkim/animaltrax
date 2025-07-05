@@ -18,7 +18,8 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
-	
+        date_default_timezone_set('America/Los_Angeles');
+
         [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
 	
@@ -102,7 +103,7 @@
 				kids, dogs, cats, adoptionStatusID, isHypo) 
 				VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, '%s', %s, '%s', %s, %s, '%s', '%s', '%s', '%s', '%s', %s);",
 				lbt($animalName), lbt($species), lbt($breed), lbt($markings), lbt($gender), 
-				$estBirthdate, 	$isFixed, lbt($note), $activityLevel, 
+				$estBirthdate, 	$isFixed, lbt($note), ($activityLevel?$activityLevel: 'NULL'), 
 				lbt($microchipNumber), $microchipTypeID, $dateImplanted, lbt($url), 
 				$kids, $dogs, $cats, $adoptionStatusID, $isHypo
 			);
@@ -197,7 +198,7 @@
 				note = '%s', url = '%s' WHERE animalID = $animalID;",
 				lbt($animalName), lbt($species), lbt($breed), lbt($markings), lbt($gender), 
 				$estBirthdate, $isFixed, $isHypo, $kids, $dogs, $cats, 
-				$adoptionStatusID, $activityLevel, lbt($microchipNumber), $microchipTypeID, 
+				$adoptionStatusID, ($activityLevel?$activityLevel:'NULL'), lbt($microchipNumber), $microchipTypeID, 
 				$dateImplanted, lbt($note), lbt($url)
 			);
 			$result = $mysqli->query($sql);

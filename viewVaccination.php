@@ -25,7 +25,7 @@
 
 	error_reporting(E_ALL);
 	ini_set('display_errors', 1);
-	
+        date_default_timezone_set('America/Los_Angeles');
 	// Get the current user, if not logged in redirect to the login page.
         [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");
@@ -40,7 +40,7 @@
 
 	// Pull the possible GET variables
 	$startDate = (isset($_GET['startDate'])?$_GET['startDate']:date('Y-m-d'));
-	$medicationID = (isset($_GET['medicationID'])?intval($_GET['medicationID']):"");
+	$medicationID = (isset($_GET['medicationID'])?intval($_GET['medicationID']):false);
 	$action = (isset($_GET['action'])?validateAction($_GET['action']):'');
 	$retPage = (isset($_GET['retPage'])?validateRetpage($_GET['retPage']):"");
 
@@ -67,7 +67,7 @@
 	
 	// Set up for POST, grabbing the variables
 	$isPost = ($_SERVER['REQUEST_METHOD'] == 'POST');
-	$p_medicationID = $isPost?intval($_POST['medicationID']):"";
+	$p_medicationID = $isPost?intval($_POST['medicationID']):false;
 	$p_startDate = $isPost?Date2MySQL($_POST['startDate']):"";
 	$lot = $isPost?$_POST['lot']:"";
 	$expDate = $isPost?$_POST['expDate']:"";
@@ -92,7 +92,8 @@
 
 		// Do some error checking
 		if ($nextDose != "" and $nextDose <= $p_startDate) $errString .= "<b>Next Dose</b> ($nextDose) can't be less then the administration date ($p_startDate).<br>";
-		if ($p_startDate == "") $errString .= "<b>Date Given</b> is a required field.<br>";
+		if (!$p_startDate) $errString .= "<b>Date Given</b> is a required field.<br>";
+		if (!$p_medicationID) $errString .= "<b>Medication Name</b> is a required field.<br>";
 		if ($p_startDate < $estBirthdate) $errString .= "<b>Next Dose</b> can't be less then $animalName's birthdate (".MySQL2Date($estBirthdate).")<br>";
 		if ($p_startDate > date('Y-m-d')) $errString .= "<b>Next Dose</b> can't be greater then today.<br>";
 		
@@ -108,7 +109,8 @@
 				($p_medicationID, $animalID, '$p_startDate', '$qLot', '$qExpDate', '$qNote', $nextDose);";
 			$updateSQL = "update Prescription set medicationID=$p_medicationID, startDate='$p_startDate', 
 					lot='$qLot', expDate='$qExpDate', nextDose=$nextDose, note='$qNote'
-					WHERE medicationID=$p_medicationID and animalID=$animalID and startDate='$startDate';";
+					WHERE medicationID=$medicationID and animalID=$animalID and startDate='$startDate';";
+//			errorPage(0, '', $insertSQL);
 			if ($p_action=="edit") $mysqli->query($updateSQL);
 			else {
 				// check to see if row exsits.  If does, treat as edit.  Otherwise, add it.
@@ -216,6 +218,7 @@
 						<td nowrap>Vaccination Name:</td>
 						<td>
 							<select id=medicationID name=medicationID>                  
+								<option></option>
 								<?php
 									foreach ($vaccListArray as $thisVacc) {
 								?>

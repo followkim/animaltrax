@@ -21,7 +21,8 @@
 	// Pull in the main includes file
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
-	
+
+        date_default_timezone_set('America/Los_Angeles');	
 	// Get the current user, if not logged in redirect to the login page.
         [$userName,$isAdmin] = getLoggedinUser();
 	if ($userName == "") header("location:login.php");

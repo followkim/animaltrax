@@ -8,7 +8,6 @@
 		  <th>Name</th>
 		  <th>Type</th>
 		  <th>Duration</th>
-		  <th>Fee</th>
 		  <th>Note</th>
 		  <th>&nbsp;</th>
 		</tr>
@@ -47,8 +46,7 @@
 			</td>
 			<td><?= $transferArray[$i]['transferName'] ?>&nbsp;</td>
 			<td><?= $nextTransfer?prettyAge($transferArray[$i]['transferDate'], $nextTransfer ,false):"&nbsp;"?>&nbsp;</td>
-			<td><?= $transferArray[$i]['fee']>0?"$".$transferArray[$i]['fee']:"&nbsp;" ?></td>
-			<td><?= $transferArray[$i]['note'] ?>&nbsp;</td>
+			<td style="max-width: 300px;white-space:wrap;"><?= $transferArray[$i]['note'] ?>&nbsp;</td>
 			<td>
 				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=edit&retPage=viewAnimal" ?>">Edit</a> / 
 				<a href="<?= "addTransfer.php?animalID=$animalID&transferDate=".$transferArray[$i]['transferDate']."&personID=".$transferArray[$i]['personID']."&action=delete&retPage=viewAnimal" ?>"
@@ -87,7 +85,8 @@ function vitalsPanel ($animalID, $species, $mysqli) {
 		</tr>
 		<?php
 			// Pull all vital information, place in date buckets
-			$sql = "SELECT * FROM VitalSign WHERE animalID='$animalID' ORDER BY VitalSign.vitalDateTime DESC";
+			$sql = "SELECT * FROM VitalSign vs INNER JOIN VitalSignType vt on vt.VitalSignTypeID = vs.VitalSignTypeID WHERE vs.animalID='$animalID' ORDER BY vs.vitalDateTime DESC;";
+//			$sql = "SELECT * FROM VitalSign WHERE animalID='$animalID' ORDER BY VitalSign.vitalDateTime DESC";
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
 			$lastDate = 0; 
@@ -98,7 +97,21 @@ function vitalsPanel ($animalID, $species, $mysqli) {
 					$i++;
 				}
 				$vitalDates[$i]['date']=MySQL2Date($row['vitalDateTime']);
-				$vitalDates[$i][$row['vitalSignTypeID']]=$row['vitalValue'];
+				if (!isset($vitalDates[$i][$row['vitalSignTypeID']])) {
+		              		$vitalVal = "<font color=";
+		                        $modifier='';
+		                        if (($row['low']+$row['hi'])>0) {
+		                                if ($row['vitalValue'] < $row['low']) {
+		                                        $vitalVal .= "blue";
+		                                        $modifier=" L";
+		                                } else if ($row['vitalValue'] > $row['hi']) {
+		                                        $vitalVal .= "red";
+		                                        $modifier=" H";
+		                                } else $vitalVal .= "black";
+		                        }
+			                $vitalVal .= ">" .$row['vitalValue'] . " " . $row['units'] . $modifier . "&nbsp;</font>";
+					$vitalDates[$i][$row['vitalSignTypeID']]=  $vitalVal;
+				}
 			}
 			$result->close();
 
@@ -206,17 +219,20 @@ function VaccinationPanel ($animalID, $species, $mysqli)
 			$thisVaccSQL = "SELECT * FROM Prescription p 
 							WHERE animalID = $animalID and medicationID = $thisMedicationID 
 							ORDER by startdate DESC;";
-			$thisVacc = $mysqli->query($thisVaccSQL);		
+			$thisVacc = $mysqli->query($thisVaccSQL);
 			if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $thisVaccSQL);
 			
 			// Loops through the set, and add the dates together in a single string
 			$vaccDateStr = '';
 			$numDoses = 0;
-			$nextDose = '';
+			$nextDose = ' '; // space indicates uninitialed - nextDose of first row might be blank, so we can't match against that
 
 			while($vaccRow = $thisVacc->fetch_array()) {
 				$numDoses++;
-				$nextDose = ($vaccRow['nextDose']?MySQL2Date($vaccRow['nextDose']):"");
+				// Grab the next dose on the first row.  Catch by matching against space so that if this is never called nextDose is still blank.
+				if ($nextDose == ' ') {
+					$nextDose = ($vaccRow['nextDose']?MySQL2Date($vaccRow['nextDose']):"");
+				}
 				if ($numDoses<6) {
 					$vaccDateStr = $vaccDateStr . MySQL2Date($vaccRow['startDate']) . ", ";
 				}
@@ -317,16 +333,15 @@ function applicationPanel($personID, $mysqli) {
 		  <th>Date</th>
 		  <th>Rank</th>
 		  <th>Species</th>
-		  <th>Name</th>
+		  <th>Desired Breed</th>
 		  <th>Matches</th>
 		  <th>&nbsp;</th>
 		</tr>
-		<?php 
+		<?php
 			$application = array();
 			$sql =   "SELECT * FROM Application where personID = $personID order by applicationDate";
 			$result = $mysqli->query($sql);
 			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-								
 
 			while($row = $result->fetch_array()) {
 				$application[]  = array(
@@ -345,19 +360,19 @@ function applicationPanel($personID, $mysqli) {
 		<tr>
 			<td><?= MySQL2Date($thisApplication['applicationDate']) ?></td>
 			<td><?= $thisApplication['rank'] ?></td>
-			<td><?= ($thisApplication['species']=='C'?"Cat":($thisApplication['species']=='D'?"Dog":"Error")) ?></td>
+			<td><?= ($thisApplication['species']=='C'?"Cat":($thisApplication['species']=='D'?"Dog":"Other")) ?></td>
 			<td><?= $thisApplication['breed'] ?></td>
 			<td>
 				<?php
-					if ($thisApplication['closed']) {
+		if ($thisApplication['closed']) {
                         print "<i>closed</i>";
-                    } else {
+		} else {
                         $sql = "call matchAnimals(".$thisApplication['applicationID'].", 0);";
                         $result = $mysqli->query($sql);
                         if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
                         else {
                             while($row = $result->fetch_array()) { ?>
-                                <a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a><br>                                
+                                <a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a><br>
                             <?php }
                         	$result->close();
                             freeResult($mysqli);
@@ -366,7 +381,7 @@ function applicationPanel($personID, $mysqli) {
 				?>
 			</td>
 			<td>
-				<a href="addApplication.php?applicationID=<?= $thisApplication['applicationID'] ?>&action=edit&personID=<?= $thisApplication['personID'] ?>">Edit</a>
+				<a href="viewApplication.php?applicationID=<?= $thisApplication['applicationID'] ?>&action=edit&personID=<?= $thisApplication['personID'] ?>">View</a> \ 
 				<?php 
                     $thisPage = basename($_SERVER['PHP_SELF']);
                     if ($thisApplication['closed']==0) print "<a href=\"".$thisPage."?applicationID=".$thisApplication['applicationID']."&action=close&personID=".$thisApplication['personID']."\">Close</a>";
@@ -395,7 +410,7 @@ function matchesPanel($animalID, $mysqli) {
 		<tr>
 		  <th>Date</th>
 		  <th>Name</th>
-		  <th>Breed</th>
+		  <th>Desired</th>
 		  <th>&nbsp;</th>
 		</tr>
 		<?php
@@ -408,8 +423,8 @@ function matchesPanel($animalID, $mysqli) {
 		<tr>
 			<td id=centerHand><?=MySQL2Date($row['applicationDate'])?></td>
 			<td id=rightHand><a href="viewPerson.php?personID=<?=$row['personID']?>"><?=$row['firstName']?> <?=$row['lastName']?></a></td>
-			<td id=rightHand><?=$row['breed']?></td>
-			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$animalID?>">Edit / View</a></td>
+			<td id=rightHand><?=$row['desired']?></td>
+			<td id=rightHand><a href="viewApplication.php?applicationID=<?=$row['applicationID']?>&animalID=<?=$animalID?>">View</td>
 		</tr>
 		<?php
 				}
@@ -431,6 +446,7 @@ function matchesPanelMain($mysqli) {
 		  <th>Date</th>
 		  <th>Animal</th>
 		  <th>Potential Owner</th>
+		  <th>Desired</th>
 		  <th>&nbsp;</th>
 		</tr>
 		<?php
@@ -444,7 +460,8 @@ function matchesPanelMain($mysqli) {
 			<td id=centerHand><?=MySQL2Date($row['applicationDate'])?></td>
 			<td id=rightHand><a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?=$row['animalName']?></a></td>
 			<td id=rightHand><a href="viewPerson.php?personID=<?=$row['personID']?>"><?=$row['firstName']?> <?=$row['lastName']?></a></td>
-			<td id=rightHand><a href="addApplication.php?applicationID=<?=$row['applicationID']?>&personID=<?=$row['personID']?>&animalID=<?=$row['animalID']?>">Edit / View</a></td>
+			<td id=rightHand><?=$row['desired']?></td>
+			<td id=rightHand><a href="viewApplication.php?applicationID=<?=$row['applicationID']?>">View</a> / <a href="viewApplication.php?applicationID=<?=$row['applicationID']?>&closed=1&retPage=main">Close</a></td>
 		</tr>
 		<?php
 				}
@@ -511,7 +528,8 @@ function pixieAnimalsPanel($personID, $mysqli) {
         <tbody>
             <!-- insert data-->
              <?php
-                $atHomeSQL = "select * from CurrentTransfer where pixieResponsible = 'Y'  order by animalName;";
+                $atHomeSQL = "select ct.*, a.aquired from CurrentTransfer ct INNER JOIN (select min(transferDate) as aquired, animalID FROM Transfer GROUP BY animalID) a on a.animalID = ct.animalID where ct. pixieResponsible = 'Y'  order by ct.animalName;";
+ 
                 $result = $mysqli->query($atHomeSQL,  MYSQLI_STORE_RESULT);
                 if ($mysqli->error) errorPage($mysqli->errno, $mysqli->error, $atHomeSQL);
                  
@@ -520,7 +538,7 @@ function pixieAnimalsPanel($personID, $mysqli) {
             ?>
             <tr>
                 <td><span><a href=<?= "\"viewAnimal.php?animalID=".$row['animalID']."\"" ?>><?= $row['animalName'] ?></a></span></td>
-                <td><span><?= MySQL2Date($row['transferDate']) ?></span></td>
+                <td><span><?= MySQL2Date($row['aquired']) ?></span></td>
                 <td><span><?= $row['speciesName'] ?></span></td>
                 <td><span><?= $row['Status'] ?></span></td>
                 <td><span><a href="viewPerson.php?personID=<?= $row['personID'] ?>"> <?= $row['CurrentPerson'] ?></a></span></td>
@@ -629,55 +647,147 @@ function currentPositionsPanel ($personID, $mysqli) {
 }
 
 
-
 function surgeryPanel($id, $who, $mysqli) {
 ?>
-	<table  id="tabular" width="100%"> 					
-		<tr><td style="vertical-align: top; width: 50%;" colspan="4"><b><?=($who=='P'?"Upcoming ":"")?>Surgeries</b></td></tr>
-		<tr>
-		  <th>Type</th>
-		  <th>Date</th>
-		  <th><?=($who=='A'?"Location":"Animal Name")?></th>
-		  <th>&nbsp;</th>
-		</tr>
-		<?php 
-			$lastTransfer = 0;	// Init lastTransfer
-			if ($who == 'A') $sql =   "SELECT * FROM AnimalSurgeries where animalID = $id";
-			else if ($who == 'P') $sql =   "SELECT * FROM AnimalSurgeries where personID = $id and surgeryDate >= '".date('Y-m-d')."'";
+        <table  id="tabular" width="100%">
+                <tr><td style="vertical-align: top; width: 50%;" colspan="4"><b><?=($who=='P'?"Upcoming ":"")?>Surgeries</b></td></tr>
+                <tr>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th><?=($who=='A'?"Location":"Animal Name")?></th>
+                  <th>&nbsp;</th>
+                </tr>
+                <?php 
+                        $lastTransfer = 0;      // Init lastTransfer
+                        if ($who == 'A') $sql =   "SELECT * FROM AnimalSurgeries where animalID = $id";
+                        else if ($who == 'P') $sql =   "SELECT * FROM AnimalSurgeries where personID = $id and surgeryDate >= '".date('Y-m-d')."'";
 
-			$result = $mysqli->query($sql);
-			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
-								
-			while($row = $result->fetch_array()) {
-				$name = ($who=='P'?$row['animalName']:$row['lastName']);
-				$animalID = $row['animalID'];
-				$personID = $row['personID'];
-				$surgeryType = $row['surgeryType'];
-				$surgeryTypeID = $row['surgeryTypeID'];
-				$surgeryDate = $row['surgeryDate'];
-				$note = $row['note'];
-		?>
-		<tr>
-			<td><a href="viewSurgery.php?animalID=<?= $animalID ?>&surgeryDate=<?= $surgeryDate ?>&surgeryTypeID= <?= $surgeryTypeID ?>"><?=$surgeryType?></td>
-			<td><?= MySQL2Date($surgeryDate) ?></td>
-			<td><a href="<?=($who=='P'?"viewAnimal.php?animalID=$animalID":"viewPerson.php?personID=$personID")?>"><?= $name ?></a></td>
-			<td>
-				<a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?= $surgeryDate ?>&surgeryTypeID=<?= $surgeryTypeID ?>">Edit</a> / 
-				<a href="viewSurgery.php?action=delete&<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>"
-	                                onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
-			</td>
-		</tr>
-		<?php 
-			}
-		?>
-		<tr>
-			<td colspan="4">
-				<?php if ($who=='A') { ?><a href="viewSurgery.php?<?=($who=='A'?"animalID=":"personID=")?><?=$id?>">View/Edit Surgeries</a> <?php } ?>
-			</td>
-		</tr>
-	</table> 	
+                        $result = $mysqli->query($sql);
+                        if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+
+                        while($row = $result->fetch_array()) {
+                                $name = ($who=='P'?$row['animalName']:$row['lastName']);
+                                $animalID = $row['animalID'];
+                                $personID = $row['personID'];
+                                $surgeryType = $row['surgeryType'];
+                                $surgeryTypeID = $row['surgeryTypeID'];
+                                $surgeryDate = $row['surgeryDate'];
+                                $note = $row['note'];
+                ?>
+                <tr>
+                        <td><a href="viewSurgery.php?animalID=<?= $animalID ?>&surgeryDate=<?= $surgeryDate ?>&surgeryTypeID= <?= $surgeryTypeID ?>"><?=$surgeryType?></td>
+                        <td><?= MySQL2Date($surgeryDate) ?></td>
+                        <td><a href="<?=($who=='P'?"viewAnimal.php?animalID=$animalID":"viewPerson.php?personID=$personID")?>"><?= $name ?></a></td>
+                        <td>
+                                <a href="viewSurgery.php?<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?= $surgeryDate ?>&surgeryTypeID=<?= $surgeryTypeID ?>">Edit</a> / 
+                                <a href="viewSurgery.php?action=delete&<?=($animalID?"animalID=$animalID&":"")?>surgeryDate=<?=$surgeryDate?>&surgeryTypeID=<?=$surgeryTypeID?>"
+                                        onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
+                        </td>
+                </tr>
+                <?php 
+                        }
+                ?>
+                <tr>
+                        <td colspan="4">
+                                <?php if ($who=='A') { ?><a href="viewSurgery.php?<?=($who=='A'?"animalID=":"personID=")?><?=$id?>">View/Edit Surgeries</a> <?php } ?>
+                        </td>
+                </tr>
+        </table>        
 <?php
 
 }
 
+function appointmentPanel($id, $who, $mysqli) {
 ?>
+        <table  id="tabular" width="100%">
+                <tr><td style="vertical-align: top; width: 50%;" colspan="4"><b> Upcoming Appointments</b></td></tr>
+                <tr>
+                  <th>Date</th>
+                  <th><?=($who=='A'?"Name":"Regarding")?></th>
+		<th>Subject</th>
+                  <th>&nbsp;</th>
+                </tr>
+                <?php 
+			$sql = "SELECT * FROM Appointment ap INNER JOIN Person p on p.personID = ap.personID LEFT JOIN Animal a on a.animalID = ap.animalID WHERE ";
+                        $lastTransfer = 0;      // Init lastTransfer
+                        if ($who == 'A') $sql .=        "ap.animalID = $id ";
+                        else if ($who == 'P') $sql .=   "ap.personID = $id ";
+			$sql .= "and ap.apptDateTime >= '".date('Y-m-d H:i:s')."'";
+                        $result = $mysqli->query($sql);
+                        if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+
+                        while($row = $result->fetch_array()) {
+                                $name = ($who=='P'?$row['animalName']:$row['firstName'] ." ". $row['lastName']);
+                                $animalID = $row['animalID'];
+                                $personID = $row['personID'];
+                                $apptDateTime = $row['apptDateTime'];
+                                $subject = $row['subject'];
+                ?>
+                <tr>
+                        <td><a href="editAppointment.php?personID=<?=$personID?>&apptDateTime=<?= $apptDateTime ?>"><?=MySQL2DateTime($apptDateTime)?></td>
+                        <td><a href="<?=($who=='P'?"viewAnimal.php?animalID=$animalID":"viewPerson.php?personID=$personID")?>"><?= $name ?></a></td>
+			<td><?=$row['subject']?></td>
+                        <td>
+                                <a href="editAppointment.php?personID=<?=$personID?>&apptDateTime=<?= $apptDateTime ?>">Edit</a> / 
+                                <a href="editAppointment.php?action=delete$personID=<?=$personID?>&apptDateTime=<?= $apptDateTime ?>""
+                                        onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
+                        </td>
+                </tr>
+                <?php 
+                        }
+                ?><tr><td></td></tr>
+                <tr>
+                        <td colspan="3">
+                                <?php if ($who=='P') { ?><a href="editAppointment.php?<?=($who=='A'?"animalID=":"personID=")?><?=$id?>">Add Appointment</a> <?php } ?>
+                        &nbsp;</td>
+                        <td><a href="viewAppointments.php?<?=($who=='A'?"animalID=":"personID=")?><?=$id?>">View All</a></td>
+                </tr>
+        </table>        
+<?php
+
+}
+
+function appointmentPanelMain($mysqli) {
+?>
+        <table  id="tabular" width="100%">
+                <tr><td style="vertical-align: top; width: 50%;" colspan="5"><b>Upcoming Appointments</b></td></tr>
+                <tr>
+                  <th>Date</th>
+		<th>Name</th>
+		<th>Regarding</th>
+		<th>Subject</th>
+                  <th>&nbsp;</th>
+                </tr>
+                <?php 
+                        $sql = "SELECT *, ap.subject FROM Appointment ap INNER JOIN Person p on p.personID = ap.personID LEFT JOIN Animal a on a.animalID = ap.animalID WHERE ap.apptDateTime >='".date('Y-m-d H:i:s')."' ORDER BY ap.apptDateTime ASC";
+                        $lastTransfer = 0;      // Init lastTransfer
+                        $result = $mysqli->query($sql);
+                        if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $sql);
+
+                        while($row = $result->fetch_array()) {
+                                $person = $row['firstName'] ." ". $row['lastName'];
+                                $animal = $row['animalName'];
+                                $animalID = $row['animalID'];
+                                $personID = $row['personID'];
+                                $apptDateTime = $row['apptDateTime'];
+                                $subject = $row['subject'];
+                ?>
+                <tr>
+                        <td><a href="editAppointment.php?personID=<?=$personID?>&apptDateTime=<?= $apptDateTime ?>"><?=MySQL2DateTime($apptDateTime)?></td>
+                        <td><a href="viewPerson.php?personID=<?=$personID?>"><?= $person ?></a></td>
+                        <td><a href="viewAnimal.php?animalID=<?=$animalID?>"><?= $animal ?></a></td>
+                        <td><?= $subject ?></td>
+                        <td>
+                                <a href="editAppointment.php?personID=<?=$personID?>&apptDateTime=<?= $apptDateTime ?>">Edit</a> / 
+                                <a href="editAppointment.php?action=delete&personID=<?=$personID?>&apptDateTime=<?= $apptDateTime ?>&retP age=main"
+                                        onclick="return confirm('Are you sure you want to delete this record?  This action can not be undone.');">Delete</a>
+                        </td>
+                </tr>
+                <?php 
+                        }
+                ?>
+        </table>        
+<?php
+
+}
+

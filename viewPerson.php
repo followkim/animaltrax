@@ -5,13 +5,14 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
+        date_default_timezone_set('America/Los_Angeles');
 	
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
 	include 'includes/panels.php';
 	
         [$userName,$isAdmin] = getLoggedinUser();
-	if ($userName == "") header("location:login.php");
+	if ($userName == "") header("location:login.php?retPage=" . basename($_SERVER['REQUEST_URI']));
 	
 	$personID = (isset($_GET['personID'])?intval($_GET['personID']):0);
 	$action = (isset($_GET['action'])?validateAction($_GET['action']):'');
@@ -113,7 +114,7 @@
 	
 	pixie_header("View Person: ".($isOrg?"":$firstName." ")."$lastName", $userName, "", $isAdmin);
  ?>
-	<table id="criteria">    
+	<table id="criteria" width="75%">    
 		<tr>
 			<td>
 				<table> <!-- first column of demographic information -->
@@ -157,12 +158,20 @@
 			<td width="50%"><?=historyPanel($personID, $mysqli)?></td>
 		</tr>
 		<tr> 
-			<td><?=filesPanel($personID, "P", $mysqli) ?></td>
+<?php		if ($isOrg) {
+?>
+			<td><?=surgeryPanel($personID, "P", $mysqli)?></td>	
+<?php		} else {
+?>
+			<td><?=appointmentPanel($personID, "P", $mysqli)?></td>	
+<?php		}
+?>
+
 			<td><?=applicationPanel($personID, $mysqli) ?></td>
 		</tr>
 		<tr>
 			<td><?=currentPositionsPanel($personID, $mysqli) ?></td>			
-			<td><?=surgeryPanel($personID, "P", $mysqli)?></td>	
+			<td><?=filesPanel($personID, "P", $mysqli) ?></td>
 		</tr>
 	</table> <!-- End subtables -->
  </formm>

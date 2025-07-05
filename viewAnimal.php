@@ -14,7 +14,7 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
-	 
+        date_default_timezone_set('America/Los_Angeles');	 
 
 	// Pull in the main includes file
 	include 'includes/utils.php';
@@ -146,12 +146,15 @@
 		<td><?=matchesPanel($animalID, $mysqli)?></td>
 	</tr>
 	<tr>
+		<td><?=vitalsPanel($animalID, $species, $mysqli)?></td>
 		<td><?=VaccinationPanel ($animalID, $species, $mysqli)?></td>	
-		<td><?=filesPanel($animalID, "A", $mysqli) ?></td>
 	</tr>
 	<tr>
-		<td><?=vitalsPanel($animalID, $species, $mysqli)?></td>
+		<td><?=filesPanel($animalID, "A", $mysqli) ?></td>
 		<td><?=surgeryPanel($animalID, "A", $mysqli)?></td>	
+	</tr>
+	<tr>
+		<td colspan=2><?=appointmentPanel($animalID, "A", $mysqli)?></td>
 	</tr>
 </table>
 <?php pixie_footer(); ?>

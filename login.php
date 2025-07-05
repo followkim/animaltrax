@@ -6,8 +6,10 @@
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
 	
+	$retPage = isset($_GET['retPage'])?$_GET['retPage']:"main.php";
+
 	[$userName,$isAdmin] = getLoggedinUser();
-	if ($userName != "") header("location:main.php");
+	if ($userName != "") header("location:$retPage");
 		
 	$error = isset($_GET['error'])?$_GET['error']:"";
 	
@@ -39,7 +41,7 @@
 			setcookie($cookie_name, $cookie_value, time() + 1200, "/");
 			// 86400 = 1 day
 			$result->close();
-			header("location:main.php");
+			header("location:$retPage");
 		}
 		else {
 			$result->close();

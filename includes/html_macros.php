@@ -142,8 +142,9 @@
 								<li><a href="editAnimal.php">Add Animal</a></li>	
 								<li><a href="findPerson.php">Find Person</a></li>	
 								<li><a href="editPerson.php">Add Person</a></li>	
+								<li><a href="searchApplications.php">Applications</a></li>	
+								<li><a href="viewAppointments.php">Appointments</a></li>
 								<?= $isAdmin?'<li><a href="editUsers.php">Edit Users</a></li>':'' ?>	
-								<li><a href="viewApplications.php">Applications</a></li>	
 							</ul>
 						</nav>
 					</font>

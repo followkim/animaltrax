@@ -2,6 +2,7 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
+        date_default_timezone_set('America/Los_Angeles');
 		
 	include 'includes/utils.php';
 	include 'includes/html_macros.php';
@@ -120,13 +121,13 @@
  ?> 
 <font color="red"><?= $errString ?></font>
 <form action="" method="POST">
-	<table id="criteria">    
+	<table id="criteria" width="100%">    
 		<tr>
 			<td width="50%">							
-				<table> <!-- first column of demographic information -->
+				<table width="100%"> <!-- first column of demographic information -->
 					<?=trd_labelData("First Name/Main Contact", $firstName, "firstName", false)?>
 					<?=trd_labelData("Last Name/Shelter Name", $lastName, "lastName", true)?>
-					<?=trd_labelData("Secondary Contact", $secondary, "secondary")?>
+					<?=trd_labelData("Secondary Contact", $secondary, "secondary", false)?>
 					<?=trd_labelData("Address 1", $address1, "address1")?>
 					<?=trd_labelData("Address 2", $address2, "address2")?>
 					<?=trd_labelData("City", $city, "city")?>
@@ -136,7 +137,7 @@
 					</table>
 			</td>
 			<td style="vertical-align: top; width: 50%;">
-				<table>			 						
+				<table width="100%">			 						
 					<?=trd_labelData("Home Phone/Fax", $homePhone, "homePhone", false, "tel")?>
 					<?=trd_labelData("Cell Phone", $cellPhone, "cellPhone", false, "tel")?>
 					<?=trd_labelData("Work Phone", $workPhone, "workPhone", false, "tel")?>

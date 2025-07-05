@@ -17,6 +17,7 @@
 	// turn on error reporting
 	error_reporting(E_ALL);
 	ini_set('display_errors', true); 
+        date_default_timezone_set('America/Los_Angeles');
 
 	// Get the current user, if not logged in redirect to the login page.
 	[$userName,$isAdmin] = getLoggedinUser();
@@ -129,7 +130,8 @@
 
 */	pixie_header("Main", $userName, "", $isAdmin);
 
-	matchesPanelMain($mysqli);
+	echo"<table><tr><td>".matchesPanelMain($mysqli)."</td></tr></table><hr>";
+	echo"<table><tr><td>".appointmentPanelMain($mysqli)."</td></tr></table>";
 
 ?>
 
@@ -148,7 +150,7 @@
 	<?php
 
 		$date=date_create(date('Y-m-d'));
-		date_add($date,new DateInterval('P1M'));
+		date_add($date,new DateInterval('P1W'));
 		$cutoff = date_format($date,"Y-m-d");
 
 		$sql = "call pixieVaccinations('$cutoff');";
@@ -159,7 +161,7 @@
 	<tr>
 		<td id="rightHand"><a href="viewAnimal.php?animalID=<?=$row['animalID']?>"><?= $row['animalName'] ?></a></td>
 		<td id="centerHand"><a href="viewVaccination.php?animalID=<?= $row['animalID'] ?>&medicationID=<?= $row['medicationID'] ?>"><?= $row['medicationName'] ?></a></td>			
-		<td id="centerHand">&nbsp;<font color ="<?= ($row['nextDose']<date('Y-m-d')?"red":"black") ?>"><b><?= MySQL2Date($row['nextDose']) ?></b></font></td> 
+		<td id="centerHand">&nbsp;<font color ="<?= ($row['nextDose']<date('Y-m-d')?"red":"black") ?>"><?= MySQL2Date($row['nextDose']) ?></font></td> 
 		<td id="centerHand"><?= MySQL2Date($row['startDate']) ?></td>
 		<td id="centerHand" style="white-space: pre-line;">&nbsp;<?= prettyAge($row['startDate'], date('Y-m-d'))  ?></td>
 		<td>
@@ -176,7 +178,7 @@
 	
 <hr>
 <table id=tabular width="100%">
-	<tr><td colspan=6><b>Upcoming Surgeries</b></td></tr>
+	<tr><td colspan=6><b>Upcoming Surgeries and Procedures</b></td></tr>
 	<tr>
 	  <th>Date</th>
 	  <th>Type</th>

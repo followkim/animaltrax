@@ -66,8 +66,9 @@
 	
 	// Set up for POST, grabbing the variables
 	$isPost = ($_SERVER['REQUEST_METHOD'] == 'POST');
-	$p_vitalSignTypeID = $isPost?$_POST['vitalSignTypeID']:"";
+	$p_vitalSignTypeID = $isPost?$_POST['vitalSignTypeID']:"";	
 	$vitalValue = $isPost?$_POST['vitalValue']:"";
+	if ($p_vitalSignTypeID == 7) $vitalValue = $vitalValue * $_POST['weightUnit'];
 	$p_vitalDateTime = $isPost?DateTime2MySQL($_POST['vitalDate']." ".$_POST['vitalTime']):date('Y-m-d H:i:s');
 	$note = $isPost?$_POST['note']:"";
 	$p_action = $isPost?$_POST['action']:"";
@@ -85,7 +86,7 @@
 			$qVitalVal=lbt($vitalValue);
 			$qNote=lbt($note);
 
-			$nextDose = (!is_null($nextDose)?"'$nextDose'":"NULL");
+			$nextDose = (isset($nextDose)?"'$nextDose'":"NULL");
 			$insertSQL = "insert into VitalSign VALUES 
 				('$p_vitalDateTime', '$qVitalVal', '$qNote', $p_vitalSignTypeID, $animalID);";
 			$updateSQL = "update VitalSign set 
@@ -94,18 +95,9 @@
 						WHERE vitalSignTypeID=$vitalSignTypeID and animalID=$animalID and vitalDateTime='$vitalDateTime';";
 
 			$sql = "CALL VitalUpsert($animalID, $p_vitalSignTypeID, '$p_vitalDateTime', $qVitalVal, '$qNote');";
-
-			try {
-//				$mysqli->query($p_action=="edit"?$updateSQL:$insertSQL);
-				$mysqli->query($sql);
-			} catch(Exception $e) {
-				$errString .= $e;
-				echo "<script>console.log('ERROR: " . $e."')</script>";
-			}
-			if ($mysqli->errno) {
-				if ($mysqli->errno == 1062) $errString .= "You can't have two vitals sign at the same time.<br>";
-				else errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
-			}
+//			errorPage(0, '', $sql);
+			$mysqli->query($sql);
+			if ($mysqli->errno) errorPage($mysqli->errno, $mysqli->error, $p_action=="edit"?$updateSQL:$insertSQL);
 
 			// If a return page was given, navigate back to it after the update/delete.
 			if ($retPage) header("location:$retPage.php?animalID=$animalID");
@@ -157,7 +149,7 @@
 					<tr>
 						<td><b>Vital Sign Name:</b></td>
 						<td>
-							<select name=vitalSignTypeID>                  
+							<select name=vitalSignTypeID id="vitalSignType">                  
 								<?php
 									
 									$sql = "select * FROM VitalSignType WHERE species='' or species='$species';";
@@ -182,7 +174,9 @@
 							<a href="editTables.php?tableName=VitalSignType&retPage=viewVitals&animalID=<?=$animalID?>">Edit List</a>   
 						</td>
 					</tr>
-					<?= trd_labelData("Value", $vitalValue, "vitalValue", true) ?>
+					<tr>
+						<td id="leftHand"><b>Value*</b></td><td id="rightHand"><input size="15" type="txt" name="vitalValue"  id="vitalValue" value="<?=$vitalValue?>""/><select id="weightUnit" name="weightUnit" hidden><option value=1>lbs</option><option value=2.205>kgs</option></select></td>
+					</tr>
 					<?= trd_labelData("Date", $vitalDateTime?date("Y-m-d",  strtotime($vitalDateTime)):date("Y-m-d"), "vitalDate", true, "date") ?>
 					<?= trd_labelData("Time", $vitalDateTime?date("H:i:s",    strtotime($vitalDateTime)):date("H:i:s"), "vitalTime", true, "time") ?>
 					<tr>
@@ -231,7 +225,7 @@
 	  <th width="100px">&nbsp;</th>
 	</tr>
 	<?php
-		$sql = "select * FROM VitalSign WHERE animalID=$animalID and vitalSignTypeID=".$vital['vitalSignTypeID'];
+		$sql = "select * FROM VitalSign WHERE animalID=$animalID and vitalSignTypeID=".$vital['vitalSignTypeID'] . " ORDER BY vitalDateTime DESC";
 		$result = $mysqli->query($sql);
 		if ($mysqli->errno)   errorPage($mysqli->errno, $mysqli->error, $sql);
 		while ($row=$result->fetch_array()) {
@@ -273,5 +267,23 @@
 <tr><td><font color="red">Red: </font> Too High</td></tr>
 <tr><td><font color="black">Black: </font> Within Range</td></tr>
 </table>
+
+<script>
+        const vst = document.getElementById("vitalSignType");
+        vst.addEventListener("change", (evt) => vitalSignChange(vst));
+	vitalSignChange(vst);
+
+        function vitalSignChange(vst) {
+	        const wu = document.getElementById("weightUnit");
+                vst_id = vst.value;
+		if (vst_id == 7) {
+			wu.hidden = false;
+		} else  {
+			wu.hidden = true;
+		}
+        }
+</script>
+
+
 
 <?php pixie_footer(); ?>
